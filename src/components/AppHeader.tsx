@@ -1,4 +1,3 @@
-// components/AppHeader.tsx
 import { useContext } from "react";
 import { GlobalContext } from "@/components/ThemeProvider";
 import {
@@ -18,13 +17,11 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import ThemeToggle from "./ThemeToggle";
-import KubernetesIcon from "@/assets/kubernetes.svg?react";
 import { UserLogout } from "@/services/user";
 import { useRequest } from "ahooks";
-import { UserInfoResponse } from "@/types/user";
-import { openNewWindow } from "@/utils/openWindowns";
-import { useUserStore } from "@/stores/userStore";
-
+import { UserInfoResponse } from "@/types/user/user";
+import Logo from "@/assets/logo.png";
+import { useNavigate } from "react-router-dom";
 interface AppHeaderProps {
   background: string;
   userData: UserInfoResponse | undefined;
@@ -36,13 +33,13 @@ export default function AppHeader({
   userLoad,
 }: AppHeaderProps) {
   const { message } = App.useApp();
+  const navigate = useNavigate();
   const { theme } = useContext(GlobalContext);
-  const { clearUser } = useUserStore();
   const { run: logoutRun } = useRequest(UserLogout, {
     manual: true,
     onSuccess: () => {
-      clearUser();
       window.location.href = "/login";
+      localStorage.removeItem("token");
     },
     onError: (error) => {
       message.error(error.message);
@@ -64,14 +61,14 @@ export default function AppHeader({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {userData?.roleName &&
-                userData?.roleName.map((role) => {
+              {userData?.roles &&
+                userData?.roles.map((role) => {
                   return (
                     <span
-                      key={role}
+                      key={role.name}
                       className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
                     >
-                      {role}
+                      {role.name}
                     </span>
                   );
                 })}
@@ -104,7 +101,7 @@ export default function AppHeader({
           <Button
             type="link"
             style={{ color: "#1890ff" }}
-            onClick={() => openNewWindow("/user/info")}
+            onClick={() => navigate("/user/info")}
             icon={<UserOutlined />}
           >
             个人信息
@@ -131,15 +128,15 @@ export default function AppHeader({
 
   return (
     <div
-      className="flex items-center justify-between px-6 h-16"
+      className="flex items-center justify-between px-3 h-18"
       style={{
         backgroundColor: theme === "dark" ? background : "#fff",
         borderBottom:
           theme === "dark" ? "1px solid #303030" : "1px solid #f0f0f0",
       }}
     >
-      <div className="flex items-center gap-2 text-lg font-semibold">
-        <KubernetesIcon width={200} height="80%" fill="#69b1ff" />
+      <div>
+        <img src={Logo} width={130} />
       </div>
 
       <Space size="middle" className="flex items-center gap-4">

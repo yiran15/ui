@@ -1,9 +1,10 @@
-import { PolicyItem } from "./policy";
+import { Api } from "./api/api";
 
 export interface ApiResponse<T = unknown> {
   code: number;
   data: T;
   msg?: string;
+  error: string;
 }
 
 export interface Options {
@@ -12,5 +13,5 @@ export interface Options {
 }
 
 export interface PolicyOptions extends Options {
-  rawData: PolicyItem;
+  rawData: Api;
 }

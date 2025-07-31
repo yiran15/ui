@@ -1,40 +1,34 @@
-import { PolicyItem } from "./policy";
+import { Api } from "../api/api";
 
-export interface roleListRequest {
+export interface RoleListRequest {
   page: number;
   pageSize: number;
-  status?: number;
-  keyword?: string;
-  value?: string;
+  name?: string;
 }
 
 export interface RoleListResponse {
   total: number;
   page: number;
   pageSize: number;
-  items: RoleItem[];
+  list: RoleItem[];
 }
 
 export interface RoleItem {
   id: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
   name: string;
   description: string;
-  policys: PolicyItem[];
-}
-
-export interface RolePolicyRequest {
-  policyIds: string[];
+  apis: Api[];
 }
 
 export interface RoleCreateRequest {
   name: string;
-  describe: string;
-  policyIds: string[];
+  description: string;
+  apis: number[];
 }
 
 export interface RoleUpdateRequest {
-  describe: string;
+  description: string;
+  apis: number[];
 }

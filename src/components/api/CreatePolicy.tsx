@@ -1,18 +1,18 @@
-import { CreatePolicy } from "@/services/policy";
+import { CreateApi } from "@/services/api";
 import { useRequest } from "ahooks";
 import { App, Form, Input, Select } from "antd";
 import ModalComponent from "../base/Modal";
 
-interface CreatePolicyComponentProps {
+interface CreateApiComponentProps {
   open: boolean;
   onCancel: () => void;
   refresh: () => void;
 }
-const CreatePolicyComponent = ({
+const CreateApiComponent = ({
   open,
   onCancel,
   refresh,
-}: CreatePolicyComponentProps) => {
+}: CreateApiComponentProps) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
   const handleCancle = () => {
@@ -20,7 +20,7 @@ const CreatePolicyComponent = ({
     onCancel();
   };
 
-  const { run: createRun, loading: createLoad } = useRequest(CreatePolicy, {
+  const { run: createRun, loading: createLoad } = useRequest(CreateApi, {
     manual: true,
     onSuccess: () => {
       message.success("创建成功");
@@ -95,11 +95,12 @@ const CreatePolicyComponent = ({
               { value: "PUT", label: "PUT" },
               { value: "DELETE", label: "DELETE" },
               { value: "PATCH", label: "PATCH" },
+              { value: "*", label: "*" },
             ]}
           />
         </Form.Item>
         <Form.Item
-          name="describe"
+          name="description"
           label="策略描述"
           rules={[{ required: true, message: "请输入角色描述" }]}
         >
@@ -110,4 +111,4 @@ const CreatePolicyComponent = ({
   );
 };
 
-export default CreatePolicyComponent;
+export default CreateApiComponent;

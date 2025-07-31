@@ -1,16 +1,15 @@
-import { UpdatePolicy } from "@/services/policy";
-import type { PolicyItem } from "@/types/policy";
+import { UpdateApi } from "@/services/api";
+import type { Api } from "@/types/api/api";
 import { useRequest } from "ahooks";
 import { App, Form, Input } from "antd";
 import { useEffect } from "react";
-import dayjs from "dayjs";
 import ModalComponent from "../base/Modal";
 
 interface UpdatePolicyComponentProps {
   open: boolean;
   onCancel: () => void;
   refresh: () => void;
-  data: PolicyItem;
+  data: Api;
 }
 
 const UpdatePolicyComponent = ({
@@ -25,25 +24,18 @@ const UpdatePolicyComponent = ({
     if (!open) {
       return;
     }
-    const createdAt = dayjs
-      .unix(Number(data.createdAt))
-      .format("YYYY-MM-DD HH:mm:ss");
-
-    const updatedAt = dayjs
-      .unix(Number(data.updatedAt))
-      .format("YYYY-MM-DD HH:mm:ss");
-
     form.setFieldsValue({
       id: data.id,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
       name: data.name,
+      path: data.path,
       method: data.method,
-      describe: data.describe,
+      description: data.description,
     });
   }, [data, open]);
 
-  const { run: upRun, loading: upLoad } = useRequest(UpdatePolicy, {
+  const { run: upRun, loading: upLoad } = useRequest(UpdateApi, {
     manual: true,
     debounceMaxWait: 500,
     onSuccess: () => {
@@ -60,13 +52,13 @@ const UpdatePolicyComponent = ({
   };
   const handleOk = () => {
     form.validateFields().then((values) => {
-      upRun(values.id, { describe: values.describe });
+      upRun(values.id, { description: values.description });
     });
   };
   return (
     <ModalComponent
       closable={false}
-      title="创建角色"
+      title="修改API"
       open={open}
       handleOk={handleOk}
       handleCancel={handleCancle}
@@ -77,47 +69,21 @@ const UpdatePolicyComponent = ({
         size="large"
         labelAlign="left"
         layout="horizontal"
-        labelCol={{ span: 6 }}
+        labelCol={{ span: 3 }}
         wrapperCol={{ span: 20 }}
       >
-        <Form.Item
-          rules={[{ required: true, message: "请输入描述" }]}
-          name={"id"}
-          label="ID"
-        >
+        <Form.Item rules={[{ required: true }]} name={"id"} label="ID">
+          <Input disabled />
+        </Form.Item>
+        <Form.Item rules={[{ required: true }]} name={"name"} label="名称">
+          <Input disabled />
+        </Form.Item>
+        <Form.Item rules={[{ required: true }]} name={"method"} label="方法">
           <Input disabled />
         </Form.Item>
         <Form.Item
           rules={[{ required: true, message: "请输入描述" }]}
-          name={"createdAt"}
-          label="创建时间"
-        >
-          <Input disabled />
-        </Form.Item>
-        <Form.Item
-          rules={[{ required: true, message: "请输入描述" }]}
-          name={"updatedAt"}
-          label="更新时间"
-        >
-          <Input disabled />
-        </Form.Item>
-        <Form.Item
-          rules={[{ required: true, message: "请输入描述" }]}
-          name={"name"}
-          label="名称"
-        >
-          <Input disabled />
-        </Form.Item>
-        <Form.Item
-          rules={[{ required: true, message: "请输入描述" }]}
-          name={"method"}
-          label="方法"
-        >
-          <Input disabled />
-        </Form.Item>
-        <Form.Item
-          rules={[{ required: true, message: "请输入描述" }]}
-          name={"describe"}
+          name={"description"}
           label="描述"
         >
           <Input />

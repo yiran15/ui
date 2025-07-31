@@ -7,36 +7,29 @@ export interface userLoginResponse {
   token: string;
 }
 
-export interface UserInfoResponse {
-  id: string;
-  name: string;
-  email: string;
-  nickName: string;
-  avatar: string;
-  roleName: string[];
-}
-
 export interface userListRequest {
-  page: number;
-  pageSize: number;
+  page: string;
+  pageSize: string;
   status?: number;
-  keyword?: string;
-  value?: string;
+  name?: string;
+  email?: string;
+  mobile?: string;
+  department?: string;
 }
 
 export interface UserListRespose {
   total: number;
   page: number;
   pageSize: number;
-  items: UserListResponseItem[];
+  list: UserListResponseItem[];
 }
 
 export interface UserListResponseItem {
   id: string;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt: number;
+  createdAt: string;
+  updatedAt: string;
   name: string;
+  department: string;
   nickName: string;
   avatar: string;
   email: string;
@@ -51,15 +44,16 @@ export interface UserRegistyRequest {
   email: string;
   nickName: string;
   mobile: string;
+  rolesID: number[];
 }
 
 export interface UserInfoResponse {
   id: string;
-  createdAt: number;
-  updatedAt: number;
-  deletedAt: number;
+  createdAt: string;
+  updatedAt: string;
   name: string;
   nickName: string;
+  department: string;
   avatar: string;
   email: string;
   mobile: string;
@@ -69,16 +63,23 @@ export interface UserInfoResponse {
 
 export interface Role {
   id: string;
-  created_at: number;
-  updatedAt: number;
-  deletedAt: number;
+  createdAt: string;
+  updatedAt: string;
   name: string;
   description: string;
 }
+
 export interface UserUpdateRequest {
-  avatar: string;
-  mobile: string;
-  nickName: string;
+  id: string;
+  name?: string;
+  avatar?: string;
+  mobile?: string;
+  nickName?: string;
+  email?: string;
+  status?: number;
+  oldPassword?: string;
+  password?: string;
+  roleIds?: number[];
 }
 
 export interface UserUpPwdRequest {

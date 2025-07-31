@@ -1,94 +1,133 @@
-import { useRequest } from "ahooks";
-import { Button, Input, Select, Space, Tooltip, Typography } from "antd";
-import { useState } from "react";
-import { UserDelete, UserEnable, UserList } from "@/services/user";
+import { useMount, useRequest, useUnmount } from "ahooks";
+import { Button, Input, Modal, Select } from "antd";
+import { useEffect, useState } from "react";
+import { UserDelete, UserList, UserUpdateByAdmin } from "@/services/user";
 import CreateUserModal from "@/components/user/CreateUserModal";
-import usePaginationParams from "@/hooks/usePaginationParams";
-import type { userListRequest, UserListResponseItem } from "@/types/user";
-import useSearchParamsHook from "@/hooks/useSearchParams";
-import EditUserRolePage from "@/components/user/EditUserRole";
-import { EditOutlined, StopOutlined, CheckOutlined } from "@ant-design/icons";
-import EnableUserComponent from "@/components/user/EnableUser";
 import useApp from "antd/es/app/useApp";
 import DynamicTable from "@/components/base/DynamicTable";
+import { userListRequest, UserListResponseItem } from "@/types/user/user";
+import { useParams } from "@/hooks/useParams";
+import { GetUserColumn } from "@/types/user/user.tsx";
+import EditUserComponent from "@/components/user/EditUser";
+import { SyncOutlined } from "@ant-design/icons";
 const { Search } = Input;
 const UserPage = () => {
   const { modal, message } = useApp();
-  // 分页参数管理
-  const { pageNum, pageSizeNum, statusNum, setPagination } =
-    usePaginationParams({
-      defaultStatus: 1,
-    });
-
-  // 搜索参数管理（设置默认搜索字段为 name）
-  const { keyword, value, setSearch, clearSearch } = useSearchParamsHook({
-    defaultKeyword: "name",
-    defaultValue: "",
+  const { getParam, setParams, replaceParams, clearParams } = useParams();
+  const page = getParam("page") || "1";
+  const pageSize = getParam("pageSize") || "10";
+  const name = getParam("name");
+  const email = getParam("email");
+  const mobile = getParam("mobile");
+  const department = getParam("department");
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [userStatus, setUserStatus] = useState<number>(0);
+  const [searchObject, setSearchObject] = useState({
+    key: "name",
+    value: name,
   });
 
-  // 组件状态
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState(value);
-  const [searchKeyword, setSearchKeyword] = useState(keyword);
-  const [userStatus, setUserStatus] = useState<number>(statusNum);
-
-  const getQueryParams = (): userListRequest => {
+  const runList = () => {
     const params: userListRequest = {
-      page: pageNum,
-      pageSize: pageSizeNum,
-      status: statusNum,
+      page: page,
+      pageSize: pageSize,
+      status: userStatus,
     };
 
-    // 只有当 value 有值时，才添加 keyword 和 value
-    if (searchValue) {
-      params.keyword = keyword;
-      params.value = searchValue;
-    }
-
-    return params;
+    setSearchObject((prev) => {
+      if (prev.value !== null) {
+        switch (prev.key) {
+          case "name":
+            params.name = prev.value || "";
+            break;
+          case "email":
+            params.email = prev.value || "";
+            break;
+          case "mobile":
+            params.mobile = prev.value || "";
+            break;
+          case "department":
+            params.department = prev.value || "";
+            break;
+          default:
+            break;
+        }
+      }
+      run(params);
+      return prev;
+    });
   };
 
   // 数据请求（自动依赖分页参数）
-  const { data, loading, refresh } = useRequest(
-    () => UserList(getQueryParams()),
-    {
-      refreshDeps: [pageNum, pageSizeNum, statusNum, value],
-      onError: (error) => {
-        message.error(error.message);
-      },
-    }
-  );
+  const {
+    data,
+    loading,
+    refresh: refreshUserList,
+    run,
+  } = useRequest(UserList, {
+    manual: true,
+    onError: (error) => {
+      message.error(error.message);
+    },
+  });
 
   const { run: delUserRun, loading: delUserLoad } = useRequest(UserDelete, {
     manual: true,
     onSuccess: () => {
-      refresh();
+      refreshUserList();
     },
     onError: (error) => {
       message.error(error.message);
     },
   });
 
-  // 用户启用
-  const [enableUser, setEnableUser] = useState({
-    open: false,
-    name: "",
-    id: "",
-    password: "",
-  });
-  const { run: enableUserRun, loading: enableUserLoad } = useRequest(
-    UserEnable,
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editId, setEditId] = useState("");
+  const editUserOpen = (id: string) => {
+    setIsEditOpen(true);
+    setEditId(id);
+  };
+  const cancelEditUser = () => {
+    setIsEditOpen(false);
+    setEditId("");
+  };
+
+  const handleSearch = () => {
+    if (searchObject.value === null) {
+      return;
+    }
+    replaceParams({
+      page: page,
+      pageSize: pageSize,
+      [searchObject.key]: searchObject.value,
+    });
+    runList();
+  };
+
+  const handleClear = () => {
+    setSearchObject((prev) => {
+      return {
+        ...prev,
+        value: "",
+      };
+    });
+    replaceParams({
+      page: page,
+      pageSize: pageSize,
+    });
+    run({
+      page: page,
+      pageSize: pageSize,
+    });
+  };
+
+  const { run: updateUserRun, loading: updateUserLoad } = useRequest(
+    UserUpdateByAdmin,
     {
       manual: true,
       onSuccess: () => {
-        message.success("启用成功");
-        setEnableUser({
-          open: false,
-          name: "",
-          id: "",
-          password: "",
-        });
-        refresh();
+        message.success("更新成功");
+        refreshUserList();
       },
       onError: (error) => {
         message.error(error.message);
@@ -96,180 +135,128 @@ const UserPage = () => {
     }
   );
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editId, setEditId] = useState("");
-
-  // 表格列配置
-  const columns = [
-    { title: "ID", dataIndex: "id", width: 150, ellipsis: true },
-    {
-      title: "名称",
-      dataIndex: "name",
-      width: 150,
-      ellipsis: true,
-      render: (name: string) => {
-        return (
-          <Tooltip title={name} placement="topLeft">
-            <span>{name}</span>
-          </Tooltip>
-        );
-      },
-    },
-    {
-      title: "邮箱",
-      dataIndex: "email",
-      render: (email: string) => {
-        if (!email) return "";
-        return (
-          <Typography.Text
-            className=""
-            copyable={{ text: email, tooltips: ["点击复制邮箱", "复制成功"] }}
-          >
-            {email}
-          </Typography.Text>
-        );
-      },
-    },
-    { title: "昵称", dataIndex: "nickName" },
-    { title: "手机号", dataIndex: "mobile", width: "120px" },
-    {
-      title: "状态",
-      dataIndex: "status",
-      width: "80px",
-      render: (status: number) => {
-        return status === 1 ? "正常" : "禁用";
-      },
-    },
-    {
-      title: "操作",
-      dataIndex: "action",
-      width: "100px",
-      render: (_: string, record: UserListResponseItem) => {
-        return (
-          <Space>
-            {record.status === 1 && (
-              <>
-                <Tooltip title="编辑角色">
-                  <Button
-                    type="link"
-                    icon={<EditOutlined />}
-                    onClick={() => {
-                      setIsEditOpen(true);
-                      setEditId(record.id.toString());
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip title="禁用用户">
-                  <Button
-                    type="link"
-                    danger
-                    loading={delUserLoad}
-                    icon={<StopOutlined />}
-                    onClick={() => {
-                      modal.confirm({
-                        title: `确认禁用${record.name}用户?`,
-                        content:
-                          "禁用后用户将无法登录系统，确定要执行此操作吗？",
-                        okText: "确认",
-                        okType: "danger",
-                        cancelText: "取消",
-                        onOk: () => {
-                          delUserRun(record.id);
-                        },
-                      });
-                    }}
-                  />
-                </Tooltip>
-              </>
-            )}
-
-            {record.status === 2 && (
-              <Tooltip title="启用用户">
-                <Button
-                  type="link"
-                  icon={<CheckOutlined />}
-                  onClick={() =>
-                    setEnableUser((prev) => {
-                      return {
-                        ...prev,
-                        open: true,
-                        name: record.name,
-                        id: record.id.toString(),
-                        password: "",
-                      };
-                    })
-                  }
-                  loading={enableUserLoad}
-                />
-              </Tooltip>
-            )}
-          </Space>
-        );
-      },
-    },
-  ];
-
-  // 分页变化处理
-  const handlePageChange = (page: number, size: number) => {
-    setPagination(page, size, statusNum);
+  const handlePageChange = (page: number, pageSize: number) => {
+    setParams({
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+    });
   };
 
-  // 搜索处理（点击搜索按钮时触发）
-  const handleSearch = () => {
-    setPagination(1, pageSizeNum, statusNum);
-    setSearch(searchKeyword, searchValue);
-    refresh();
-  };
+  const [restUserPWDState, setRestUserPWDState] = useState({
+    open: false,
+    id: "",
+    password: "",
+    name: "",
+  });
+
+  useMount(() => {
+    setParams({ page: page, pageSize: pageSize });
+  });
+
+  useUnmount(() => {
+    clearParams();
+  });
+
+  useEffect(() => {
+    if (email) {
+      setSearchObject({ key: "email", value: email });
+    } else if (mobile) {
+      setSearchObject({ key: "mobile", value: mobile });
+    } else if (department) {
+      setSearchObject({ key: "department", value: department });
+    } else if (name) {
+      setSearchObject({ key: "name", value: name || "" });
+    }
+  }, [email, mobile, department, name]);
+
+  useEffect(() => {
+    runList();
+  }, [page, pageSize, userStatus]);
 
   return (
     <div className="px-4">
-      <Space className="mb-4" wrap size={16}>
-        <Select
-          value={userStatus}
-          onChange={(val) => setUserStatus(val)}
-          onSelect={(val) => setPagination(pageNum, pageSizeNum, val)}
-          placeholder="用户状态"
-        >
-          <Select.Option value={-1}>全部状态</Select.Option>
-          <Select.Option value={1}>正常状态</Select.Option>
-          <Select.Option value={2}>禁用状态</Select.Option>
-        </Select>
-        <Search
-          placeholder={`按${keyword === "name" ? "姓名" : "邮箱"}前缀搜索`}
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          onSearch={handleSearch}
-          onClear={clearSearch}
-          allowClear
-          addonBefore={
-            <Select
-              value={searchKeyword}
-              onChange={(val) => {
-                setSearchKeyword(val);
-              }}
-              style={{ width: 100 }}
-            >
-              <Select.Option value="name">姓名</Select.Option>
-              <Select.Option value="email">邮箱</Select.Option>
-            </Select>
-          }
-        />
-        <Button type="primary" onClick={() => setCreateModalOpen(true)}>
-          创建用户
-        </Button>
-      </Space>
+      <div className="flex justify-between pb-3">
+        <div className="flex gap-4">
+          <Select
+            value={userStatus}
+            onChange={(val) => setUserStatus(val)}
+            onSelect={(val) => setUserStatus(val)}
+            placeholder="用户状态"
+          >
+            <Select.Option value={0}>全部状态</Select.Option>
+            <Select.Option value={1}>正常状态</Select.Option>
+            <Select.Option value={2}>禁用状态</Select.Option>
+          </Select>
+          <Search
+            placeholder="按姓名 邮箱 部门前缀搜索"
+            style={{ minWidth: "400px", maxWidth: "600px" }}
+            value={searchObject.value || ""}
+            onChange={(e) => {
+              setSearchObject((prev) => {
+                return {
+                  ...prev,
+                  value: e.target.value,
+                };
+              });
+            }}
+            onSearch={handleSearch}
+            onClear={handleClear}
+            allowClear
+            addonBefore={
+              <Select
+                value={searchObject.key}
+                onChange={(val) => {
+                  setSearchObject((prev) => {
+                    return {
+                      ...prev,
+                      key: val,
+                    };
+                  });
+                }}
+                style={{ width: 100 }}
+              >
+                <Select.Option value="name">名称</Select.Option>
+                <Select.Option value="email">邮箱</Select.Option>
+                <Select.Option value="department">部门</Select.Option>
+              </Select>
+            }
+          />
+          <Button type="primary" onClick={() => setCreateModalOpen(true)}>
+            创建用户
+          </Button>
+        </div>
 
-      <DynamicTable
+        <div className="pr-3">
+          <Button icon={<SyncOutlined />} onClick={() => refreshUserList()} />
+        </div>
+      </div>
+
+      <DynamicTable<UserListResponseItem>
         extraHeight={80}
         loading={loading}
-        columns={columns}
-        dataSource={data?.items || []}
+        columns={GetUserColumn({
+          message,
+          updateUserLoad,
+          updateUserRun,
+          delUserLoad,
+          delUserRun,
+          editUserOpen,
+          modal,
+          setRestUserPWDState,
+        })}
+        dataSource={data?.list || []}
+        locale={{
+          emptyText: "暂无数据",
+          triggerAsc: "点击升序",
+          triggerDesc: "点击降序",
+          cancelSort: "取消排序",
+        }}
         pagination={{
           pageSizeOptions: ["10", "20", "50", "100"],
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} 条，共 ${total} 条数据`,
-          current: pageNum,
-          pageSize: pageSizeNum,
+          current: Number(page) || 1,
+          pageSize: Number(pageSize) || 10,
           total: data?.total || 0,
           showSizeChanger: true,
           onChange: handlePageChange,
@@ -285,22 +272,49 @@ const UserPage = () => {
       <CreateUserModal
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        refresh={refresh}
+        refresh={refreshUserList}
       />
-      <EnableUserComponent
-        loading={enableUserLoad}
-        enableUser={enableUser}
-        setEnableUser={setEnableUser}
-        enableUserRun={enableUserRun}
-      />
-      <EditUserRolePage
+      <EditUserComponent
+        callback={refreshUserList}
         open={isEditOpen}
-        onCancel={() => {
-          setIsEditOpen(false);
-          setEditId("");
-        }}
+        onCancel={cancelEditUser}
         id={editId}
+        modal={modal}
+        message={message}
       />
+      <Modal
+        title={`重置 ${restUserPWDState.name} 的密码`}
+        open={restUserPWDState.open}
+        styles={{
+          body: {
+            padding: "20px 10px 20px 10px",
+          },
+        }}
+        closable={false}
+        okText="重置"
+        cancelText="取消"
+        onCancel={() =>
+          setRestUserPWDState({ open: false, id: "", password: "", name: "" })
+        }
+        onOk={() => {
+          updateUserRun({
+            id: restUserPWDState.id,
+            password: restUserPWDState.password,
+          });
+          setRestUserPWDState({ open: false, id: "", password: "", name: "" });
+        }}
+      >
+        <Input.Password
+          value={restUserPWDState.password}
+          size="large"
+          onChange={(e) =>
+            setRestUserPWDState((prev) => ({
+              ...prev,
+              password: e.target.value,
+            }))
+          }
+        />
+      </Modal>
     </div>
   );
 };

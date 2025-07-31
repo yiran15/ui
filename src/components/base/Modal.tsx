@@ -6,7 +6,7 @@ interface ModalComponentProps extends React.ComponentProps<typeof Modal> {
   handleCancel: () => void;
   handleOk?: () => void;
   confirmLoading: boolean;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const ModalComponent = ({

@@ -1,216 +1,199 @@
-import usePaginationParams from "@/hooks/usePaginationParams";
-import useSearchParamsHook from "@/hooks/useSearchParams";
-import { RoleDelete, RoleList } from "@/services/role";
-import { RoleItem, roleListRequest } from "@/types/role";
-import { useRequest } from "ahooks";
-import { Button, Input, Select, Space, Tooltip } from "antd";
-import { useMemo, useState } from "react";
-import {
-  DeleteOutlined,
-  UserOutlined,
-  UserSwitchOutlined,
-} from "@ant-design/icons";
-import RoleDetailPage from "@/components/role/RolePolicesEdit";
-import { GetPolicyList } from "@/services/policy";
+import { DeleteRole, ListRole } from "@/services/role";
+import { useRequest, useUnmount } from "ahooks";
+import { Button, Input, Select } from "antd";
+import { useEffect, useState } from "react";
+import { GetRolecolumns } from "@/types/role/role.tsx";
 import useApp from "antd/es/app/useApp";
-import CreateRoleComponent from "@/components/role/CreateRole";
 import RoleEditComponent from "@/components/role/RoleEdit";
 import DynamicTable from "@/components/base/DynamicTable";
+import { useParams } from "@/hooks/useParams";
+import CreateRoleComponent from "@/components/role/CreateRole";
+import { SyncOutlined } from "@ant-design/icons";
+import { RoleListRequest } from "@/types/role/role";
 const { Search } = Input;
 const RolePage = () => {
-  const { message, modal } = useApp();
-  // 分页参数管理
-  const { pageNum, pageSizeNum, statusNum, setPagination } =
-    usePaginationParams({
-      defaultStatus: 1,
-    });
-  const { keyword, value, setSearch, clearSearch } = useSearchParamsHook({
-    defaultKeyword: "name",
-    defaultValue: "",
+  const { modal, message } = useApp();
+  const { getParam, setParams, replaceParams, clearParams } = useParams();
+  const page = getParam("page") || "1";
+  const pageSize = getParam("pageSize") || "10";
+  const name = getParam("name");
+  const [searchObject, setSearchObject] = useState({
+    key: "name",
+    value: name,
   });
-  const [searchValue, setSearchValue] = useState(value);
-  const [searchKeyword, setSearchKeyword] = useState(keyword);
-
-  const getQueryParams = (): roleListRequest => {
-    const params: roleListRequest = {
-      page: pageNum,
-      pageSize: pageSizeNum,
-      status: statusNum,
-    };
-
-    // 只有当 value 有值时，才添加 keyword 和 value
-    if (searchValue) {
-      params.keyword = keyword;
-      params.value = searchValue;
-    }
-
-    return params;
-  };
 
   const {
     data: roleData,
     loading: roleLoad,
-    refresh,
-  } = useRequest(() => RoleList(getQueryParams()), {
-    refreshDeps: [pageNum, pageSizeNum, value],
+    refresh: refreshRoleList,
+    run,
+  } = useRequest(ListRole, {
+    manual: true,
   });
 
-  const { run: delRun, loading: delLoad } = useRequest(RoleDelete, {
+  const { run: delRun, loading: delLoad } = useRequest(DeleteRole, {
     manual: true,
     debounceWait: 500,
     onSuccess: () => {
       message.success("删除成功");
-      refresh();
+      refreshRoleList();
     },
-    onError: (err) => message.error(`${err.message}`),
+    onError: (err) => {
+      message.open({
+        type: "error",
+        duration: 5,
+        content: `${err.message}`,
+      });
+    },
   });
 
   const [roleId, setRoleId] = useState("");
-  const [roleEdit, setRoleEdit] = useState(false);
-  const [editOpen, setEditRole] = useState<boolean>(false);
-  const [roleRecord, setRoleRecord] = useState<RoleItem>({} as RoleItem);
-  const columns = [
-    { title: "角色ID", dataIndex: "id", width: 150 },
-    { title: "角色名称", dataIndex: "name", width: 150 },
-    {
-      title: "角色描述",
-      dataIndex: "description",
-      ellipsis: true,
-      render: (text: string) => (
-        <Tooltip title={text} placement="topLeft">
-          <span>{text}</span>
-        </Tooltip>
-      ),
-    },
-    {
-      title: "操作",
-      width: 130,
-      render: (_: unknown, record: RoleItem) => (
-        <>
-          <Tooltip title="编辑角色">
-            <Button
-              type="link"
-              icon={<UserOutlined />}
-              onClick={() => {
-                setRoleRecord(record);
-                setEditRole(true);
-              }}
-            />
-          </Tooltip>
-          <Tooltip title="编辑策略">
-            <Button
-              type="link"
-              icon={<UserSwitchOutlined />}
-              onClick={() => {
-                listPolicesRun();
-                setRoleId(record.id.toString());
-                setRoleEdit(true);
-              }}
-            />
-          </Tooltip>
-          <Tooltip title="删除角色">
-            <Button
-              type="link"
-              danger
-              loading={delLoad}
-              icon={<DeleteOutlined />}
-              onClick={() => {
-                modal.confirm({
-                  title: "确认删除角色",
-                  content: `确定要删除角色【${record.name}】吗？该操作不可恢复！`,
-                  okText: "确定",
-                  cancelText: "取消",
-                  okType: "danger",
-                  onOk: () => delRun(record.id.toString()),
-                });
-              }}
-            />
-          </Tooltip>
-        </>
-      ),
-    },
-  ];
+  const [editOpen, setEditOpen] = useState<boolean>(false);
 
-  // 分页变化处理
+  // // 分页变化处理
   const handlePageChange = (page: number, size: number) => {
-    setPagination(page, size, 1);
+    setParams({
+      page: page.toString(),
+      pageSize: size.toString(),
+    });
   };
 
-  // 搜索处理（点击搜索按钮时触发）
+  // // 搜索处理（点击搜索按钮时触发）
   const handleSearch = () => {
-    setPagination(1, pageSizeNum, 1);
-    setSearch(searchKeyword, searchValue);
-    refresh();
+    if (searchObject.value === null) {
+      return;
+    }
+    setParams({
+      [searchObject.key]: searchObject.value,
+    });
+    run({
+      page: Number(page),
+      pageSize: Number(pageSize),
+      [searchObject.key]: searchObject.value,
+    });
   };
 
-  const { run: listPolicesRun, data: listPolicesData } = useRequest(
-    () => GetPolicyList({ page: -1, pageSize: -1 }),
-    {
-      manual: true,
-      onError: (err) => message.error(`${err.message}`),
-    }
-  );
+  const handleClear = () => {
+    setSearchObject({
+      key: "name",
+      value: "",
+    });
+    replaceParams({
+      page: page,
+      pageSize: pageSize,
+    });
+    run({
+      page: Number(page),
+      pageSize: Number(pageSize),
+    });
+  };
 
-  const policyOptions = useMemo(() => {
-    if (listPolicesData) {
-      return (
-        listPolicesData.items.map((policy) => ({
-          label: `${policy.name} (${policy.method.toUpperCase()} ${
-            policy.path
-          })`,
-          value: policy.id,
-          rawData: policy,
-        })) || []
-      );
-    }
-  }, [listPolicesData]);
+  const [createRoleOpen, setCreateRoleOpen] = useState<boolean>(false);
 
-  const [createRoleOpen, setCreateRoleOpen] = useState(false);
+
+  const runList = () => {
+    const params: RoleListRequest = {
+      page: Number(page),
+      pageSize: Number(pageSize),
+    };
+    setSearchObject((prev) => {
+      if (prev.value !== null) {
+        switch (prev.key) {
+          case "name":
+            params.name = prev.value || "";
+            break;
+          default:
+            break;
+        }
+      }
+      run(params);
+      return prev;
+    });
+  };
+
+  useEffect(() => {
+    setParams({ page: page, pageSize: pageSize });
+    runList();
+  }, [page, pageSize]);
+
+  useUnmount(() => {
+    clearParams();
+  });
 
   return (
     <div className="px-4">
-      <Space className="mb-4" wrap size={16}>
-        <Search
-          placeholder={`按${keyword === "name" ? "姓名" : "邮箱"}前缀搜索`}
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          onSearch={handleSearch}
-          onClear={clearSearch}
-          allowClear
-          addonBefore={
-            <Select
-              value={searchKeyword}
-              onChange={(val) => {
-                setSearchKeyword(val);
-              }}
-              style={{ width: 100 }}
-            >
-              <Select.Option value="name">名称</Select.Option>
-            </Select>
-          }
-        />
-        <Button
-          type="primary"
-          onClick={() => {
-            listPolicesRun();
-            setCreateRoleOpen(true);
-          }}
-        >
-          创建角色
-        </Button>
-      </Space>
+      <div className="flex justify-between pb-3">
+        <div className="flex gap-4">
+          <Search
+            placeholder={`按名称前缀搜索`}
+            style={{ minWidth: "400px", maxWidth: "600px" }}
+            value={searchObject.value || ""}
+            onChange={(e) =>
+              setSearchObject((prev) => {
+                return {
+                  ...prev,
+                  value: e.target.value,
+                };
+              })
+            }
+            onSearch={handleSearch}
+            onClear={handleClear}
+            allowClear
+            addonBefore={
+              <Select
+                value={searchObject.key}
+                onChange={(val) => {
+                  setSearchObject((prev) => {
+                    return {
+                      ...prev,
+                      key: val,
+                    };
+                  });
+                }}
+                style={{ width: 100 }}
+              >
+                <Select.Option value="name">名称</Select.Option>
+              </Select>
+            }
+          />
+          <Button
+            type="primary"
+            onClick={() => {
+              setCreateRoleOpen(true);
+            }}
+          >
+            创建角色
+          </Button>
+        </div>
+        <div className="pr-3">
+          <Button icon={<SyncOutlined />} onClick={() => refreshRoleList()} />
+        </div>
+      </div>
 
       <DynamicTable
         extraHeight={80}
         loading={roleLoad}
-        columns={columns}
-        dataSource={roleData?.items || []}
+        columns={GetRolecolumns({
+          setRoleId,
+          modal,
+          message,
+          delRun,
+          setEditOpen,
+          delLoad,
+        })}
+        locale={{
+          emptyText: "暂无数据",
+          triggerAsc: "点击升序",
+          triggerDesc: "点击降序",
+          cancelSort: "取消排序",
+        }}
+        dataSource={roleData?.list || []}
         pagination={{
           pageSizeOptions: ["10", "20", "50", "100"],
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} 条，共 ${total} 条数据`,
-          current: pageNum,
-          pageSize: pageSizeNum,
+          current: Number(page),
+          pageSize: Number(pageSize),
           total: roleData?.total || 0,
           showSizeChanger: true,
           onChange: handlePageChange,
@@ -222,31 +205,22 @@ const RolePage = () => {
         }}
         bordered
       />
+      <RoleEditComponent
+        id={roleId}
+        message={message}
+        refreshRoleList={refreshRoleList}
+        open={editOpen}
+        handleCancel={() => {
+          setEditOpen(false);
+        }}
+      />
       <CreateRoleComponent
         open={createRoleOpen}
-        onCancel={() => {
+        message={message}
+        onClose={() => {
           setCreateRoleOpen(false);
         }}
-        policyOptions={policyOptions}
-        refresh={refresh}
-      />
-      <RoleEditComponent
-        refresh={refresh}
-        open={editOpen}
-        data={roleRecord}
-        handleCancel={() => {
-          setEditRole(false);
-          setRoleRecord({} as RoleItem);
-        }}
-      />
-      <RoleDetailPage
-        policyOptions={policyOptions}
-        open={roleEdit}
-        id={roleId}
-        onCancel={() => {
-          setRoleEdit(false);
-          setRoleId("");
-        }}
+        refreshRoleList={refreshRoleList}
       />
     </div>
   );

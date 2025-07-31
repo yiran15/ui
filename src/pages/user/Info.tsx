@@ -1,6 +1,6 @@
 import LoadingComponent from "@/components/base/Loading";
-import { UserInfo, userUpdate, userUpdatePassword } from "@/services/user";
-import { UserUpdateRequest, UserUpPwdRequest } from "@/types/user";
+import { UserInfo, UserUpdateBySelf } from "@/services/user";
+import { UserUpdateRequest, UserUpPwdRequest } from "@/types/user/user";
 import { useRequest } from "ahooks";
 import {
   App,
@@ -12,6 +12,7 @@ import {
   Avatar,
   Descriptions,
   theme,
+  Tag,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 
@@ -37,7 +38,7 @@ const InfoPage = () => {
     },
   });
 
-  const { run: upRun, loading: upLoad } = useRequest(userUpdate, {
+  const { run: upRun, loading: upLoad } = useRequest(UserUpdateBySelf, {
     manual: true,
     debounceWait: 500,
     onSuccess: () => {
@@ -57,7 +58,7 @@ const InfoPage = () => {
     window.location.href = "/login";
   };
 
-  const { run: upPwdRun, loading: upPwdLoad } = useRequest(userUpdatePassword, {
+  const { run: upPwdRun, loading: upPwdLoad } = useRequest(UserUpdateBySelf, {
     manual: true,
     onSuccess: () => {
       message.success("修改成功");
@@ -76,7 +77,15 @@ const InfoPage = () => {
   };
 
   const onPwdFinish = (values: UserUpPwdRequest) => {
-    upPwdRun(values);
+    if (!userInfo?.id) {
+      message.error("用户ID不存在");
+      return;
+    }
+    upPwdRun({
+      id: userInfo?.id,
+      oldPassword: values.oldPassword,
+      password: values.newPassword,
+    });
   };
 
   // 清理 setTimeout
@@ -153,7 +162,7 @@ const InfoPage = () => {
               {userInfo?.email}
             </Descriptions.Item>
             <Descriptions.Item label="角色">
-              {userInfo?.roleName?.join(", ")}
+              {userInfo?.roles?.map((role) =>  <Tag color="blue">{(role.name)}</Tag>)}
             </Descriptions.Item>
             <Descriptions.Item label="状态">
               <span

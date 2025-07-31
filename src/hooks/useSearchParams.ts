@@ -3,41 +3,41 @@ import { useSearchParams } from "react-router-dom";
 import { useMemo } from "react";
 
 type SearchConfig = {
-  keywordKey?: string;
-  valueKey?: string;
-  defaultKeyword?: string;
-  defaultValue?: string;
+  sortKey?: string;
+  directionKey?: "asc" | "desc" | undefined;
+  defaultSort?: string;
+  defaultDirection?: "asc" | "desc" | undefined;
 };
 
 export default function useSearchParamsHook(config?: SearchConfig) {
   const {
-    keywordKey = "keyword",
-    valueKey = "value",
-    defaultKeyword = "",
-    defaultValue = "",
+    sortKey = "sort",
+    directionKey = "direction",
+    defaultSort = "",
+    defaultDirection = "asc",
   } = config || {};
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   return useMemo(() => {
-    const currentKeyword = searchParams.get(keywordKey) || defaultKeyword;
-    const currentValue = searchParams.get(valueKey) || defaultValue;
+    const currentSort = searchParams.get(sortKey) || defaultSort;
+    const currentDirection = searchParams.get(directionKey) || defaultDirection;
 
     return {
-      keyword: currentKeyword,
-      value: currentValue,
-      keywordKey,
-      valueKey,
+      sort: currentSort,
+      direction: currentDirection,
+      sortKey,
+      directionKey,
 
-      setSearch: (keyword: string, value: string) => {
+      setSearch: (sort: string, direction: string) => {
         const newParams = new URLSearchParams(searchParams);
 
-        if (value) {
-          newParams.set(keywordKey, keyword);
-          newParams.set(valueKey, value);
+        if (sort) {
+          newParams.set(sortKey, sort);
+          newParams.set(directionKey, direction);
         } else {
-          newParams.delete(keywordKey);
-          newParams.delete(valueKey);
+          newParams.delete(sortKey);
+          newParams.delete(directionKey);
         }
 
         setSearchParams(newParams);
@@ -45,17 +45,17 @@ export default function useSearchParamsHook(config?: SearchConfig) {
 
       clearSearch: () => {
         const newParams = new URLSearchParams(searchParams);
-        newParams.delete(keywordKey);
-        newParams.delete(valueKey);
+        newParams.delete(sortKey);
+        newParams.delete(directionKey);
         setSearchParams(newParams);
       },
     };
   }, [
     searchParams,
     setSearchParams,
-    keywordKey,
-    valueKey,
-    defaultKeyword,
-    defaultValue,
+    sortKey,
+    directionKey,
+    defaultSort,
+    defaultDirection,
   ]);
 }

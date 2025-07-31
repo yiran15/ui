@@ -1,120 +1,197 @@
-import type { RoleItem } from "@/types/role";
-import ModalComponent from "../base/Modal";
-import { App, Form, Input } from "antd";
-import { useEffect } from "react";
-import dayjs from "dayjs";
+import {
+  Button,
+  Col,
+  Drawer,
+  Form,
+  Input,
+  Popconfirm,
+  Row,
+  Tag,
+} from "antd";
+import { useEffect, useState } from "react";
 import { useRequest } from "ahooks";
-import { UpdateRole } from "@/services/role";
-
+import { QueryRole, UpdateRole } from "@/services/role";
+import TransferComponent from "../base/Transfer";
+import { MessageInstance } from "antd/es/message/interface";
+import { GetApiList } from "@/services/api";
+import { ApiColumns } from "@/types/api/api.tsx";
 interface RoleEditComponentProps {
+  id: string;
   open: boolean;
+  message: MessageInstance;
   handleCancel: () => void;
-  refresh: () => void;
-  data: RoleItem | undefined;
+  refreshRoleList: () => void;
 }
 
 const RoleEditComponent = ({
+  id,
+  message,
   open,
-  refresh,
+  refreshRoleList,
   handleCancel,
-  data,
 }: RoleEditComponentProps) => {
   const [form] = Form.useForm();
-  const { message } = App.useApp();
+  const { run: queryRoleRun, loading: queryRoleloading } = useRequest(
+    QueryRole,
+    {
+      manual: true,
+      onSuccess: (data) => {
+        console.log("roleData", data);
+        form.setFieldsValue(data);
+        setTargetKeys(data?.apis?.map((api) => api.id) || []);
+      },
+      onError: (err) => {
+        message.error(err.message);
+      },
+    }
+  );
+
   useEffect(() => {
-    if (!data || !open) return;
-    const createdAt = dayjs
-      .unix(Number(data.createdAt))
-      .format("YYYY-MM-DD HH:mm:ss");
+    console.log("useEffect", open, id);
+    if (open && id) {
+      console.log("queryRoleRun");
+      queryRoleRun(id);
+      policyRun({ page: 0, pageSize: 0 });
+    }
+  }, [id, open]);
 
-    const updatedAt = dayjs
-      .unix(Number(data.updatedAt))
-      .format("YYYY-MM-DD HH:mm:ss");
-    form.setFieldsValue({
-      id: data.id,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      name: data.name,
-      describe: data.description,
-    });
-  }, [data, open]);
-
-  const OnCancel = () => {
-    form.resetFields();
-    handleCancel();
-  };
-
-  const { run, loading } = useRequest(UpdateRole, {
+  const { run: policyRun, data: apiData } = useRequest(GetApiList, {
     manual: true,
-    onSuccess: () => {
-      message.success("修改成功");
-      refresh();
-      OnCancel();
-    },
     onError: (err) => {
       message.error(err.message);
     },
   });
-  const handleOk = () => {
+
+  const { run: updateRoleRun, loading: updateRoleLoad } = useRequest(
+    UpdateRole,
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success("修改成功");
+        refreshRoleList();
+        setConfirmLoading(false);
+      },
+      onError: (err) => {
+        message.error(err.message);
+      },
+    }
+  );
+
+  const [targetKeys, setTargetKeys] = useState<React.Key[]>([]);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const drawerClose = () => {
+    handleCancel();
+    form.resetFields();
+    setTargetKeys([]);
+    setConfirmLoading(false);
+  };
+
+  const drawerOK = () => {
     form.validateFields().then((values) => {
-      run(values.id, { describe: values.describe });
+      updateRoleRun(values.id, {
+        description: values.description,
+        apis: targetKeys.map((id) => Number(id)),
+      });
     });
+  };
+  const getDrawerFooter = () => {
+    return (
+      <div className="flex justify-end gap-6 p-3">
+        <Popconfirm
+          title="再次确认"
+          description="确认保存角色信息？"
+          open={confirmLoading}
+          cancelText="取消"
+          onCancel={() => {
+            setConfirmLoading(false);
+          }}
+          okText="确认"
+          onConfirm={drawerOK}
+          okButtonProps={{ loading: updateRoleLoad }}
+        >
+          <Button type="primary" onClick={() => setConfirmLoading(true)}>
+            保存
+          </Button>
+        </Popconfirm>
+
+        <Button onClick={drawerClose}>取消</Button>
+      </div>
+    );
   };
   return (
     <>
-      <ModalComponent
+      <Drawer
+        destroyOnClose
+        width="70%"
+        loading={queryRoleloading}
+        title="编辑角色信息"
+        onClose={drawerClose}
         open={open}
-        handleCancel={OnCancel}
-        handleOk={handleOk}
-        confirmLoading={loading}
-        title="编辑角色"
-        closable={false}
+        footer={getDrawerFooter()}
       >
-        <Form
-          form={form}
-          layout="horizontal"
-          size="large"
-          labelAlign="left"
-          labelCol={{ span: 6 }}
-        >
-          <Form.Item
-            label="角色ID"
-            rules={[{ required: true, message: "请输入角色描述" }]}
-            name="id"
-          >
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            label="创建时间"
-            rules={[{ required: true, message: "请输入角色描述" }]}
-            name="createdAt"
-          >
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            label="更新时间"
-            rules={[{ required: true, message: "请输入角色描述" }]}
-            name="updatedAt"
-          >
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            label="角色名称"
-            rules={[{ required: true, message: "请输入角色描述" }]}
-            name="name"
-          >
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            required
-            rules={[{ required: true, message: "请输入角色描述" }]}
-            label="角色描述"
-            name="describe"
-          >
-            <Input />
-          </Form.Item>
-        </Form>
-      </ModalComponent>
+        <div className="flex flex-col gap-4">
+          <span className="text-lg font-bold">角色基础信息</span>
+          <Form form={form} layout="vertical">
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="角色ID"
+                  rules={[{ required: true, message: "请输入角色描述" }]}
+                  name="id"
+                >
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="创建时间"
+                  rules={[{ required: true, message: "请输入角色描述" }]}
+                  name="createdAt"
+                >
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="角色名称"
+                  rules={[{ required: true, message: "请输入角色描述" }]}
+                  name="name"
+                >
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  required
+                  rules={[{ required: true, message: "请输入角色描述" }]}
+                  label="角色描述"
+                  name="description"
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+        <div className="flex flex-col gap-4">
+          <span className="text-lg font-bold">用户角色信息</span>
+          <TransferComponent
+            extraHeight={530}
+            targetKeys={targetKeys}
+            setTargetKeys={setTargetKeys}
+            titles={[
+              <Tag color="blue">未关联API</Tag>,
+              <Tag color="green">已关联API</Tag>,
+            ]}
+            filterOption={(input, item) => item.name.includes(input)}
+            dataSource={(apiData?.list || []).map((item) => ({
+              ...item,
+              key: item.id,
+            }))}
+            columns={ApiColumns()}
+          />
+        </div>
+      </Drawer>
     </>
   );
 };

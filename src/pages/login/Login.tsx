@@ -1,8 +1,9 @@
 import { UserLogin } from "@/services/user";
 import { useRequest } from "ahooks";
-import { App, Button, Card, Form, Input, Typography } from "antd";
+import { App, Button, Card, Checkbox, Form, Input, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
-
+import bgImage from "@/assets/login.png";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
 const { Title } = Typography;
 const LoginPage = () => {
   const { message } = App.useApp();
@@ -12,9 +13,14 @@ const LoginPage = () => {
   const { run: loginRun, loading: loginLoading } = useRequest(UserLogin, {
     manual: true,
     onError: (error) => {
-      message.error(error.message);
+      if (error.message === "object not found") {
+        message.error("用户不存在");
+      } else {
+        message.error(error.message);
+      }
     },
     onSuccess: (res) => {
+      console.log(res);
       localStorage.setItem("token", res?.token);
       navigate(from ? decodeURIComponent(from) : "/", { replace: true });
     },
@@ -25,9 +31,16 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+    <div
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+      className="flex items-center justify-center min-h-screen from-indigo-500 via-purple-500 to-pink-500"
+    >
       <Card
-        className="w-full max-w-lg p-8"
+        className="max-w-lg p-8 w-full"
         style={{
           borderRadius: "12px",
           boxShadow: "0 10px 15px rgba(0, 0, 0, 0.1)",
@@ -39,17 +52,18 @@ const LoginPage = () => {
 
         <Form
           name="login"
+          size="large"
           onFinish={onFinish}
           initialValues={{ remember: true }}
-          layout="vertical"
+          wrapperCol={{ span: 18, offset: 3 }}
         >
           <Form.Item
-            label="用户名"
             name="email"
             rules={[{ required: true, message: "请输入用户名!" }]}
             required={false}
           >
             <Input
+              prefix={<UserOutlined />}
               placeholder="请输入用户名"
               className="focus:ring-indigo-500 focus:border-indigo-500"
               style={{ borderRadius: "8px" }}
@@ -57,7 +71,6 @@ const LoginPage = () => {
           </Form.Item>
 
           <Form.Item
-            label="密码"
             required={false}
             name="password"
             rules={[
@@ -66,29 +79,28 @@ const LoginPage = () => {
             ]}
           >
             <Input.Password
+              prefix={<LockOutlined />}
               placeholder="请输入密码"
               className="focus:ring-indigo-500 focus:border-indigo-500"
               style={{ borderRadius: "8px" }}
             />
           </Form.Item>
 
+          <Form.Item name="remember" valuePropName="checked">
+            <Checkbox>记住我</Checkbox>
+          </Form.Item>
+
           <Form.Item className="mt-6">
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              loading={loginLoading}
-              style={{
-                backgroundColor: "#4c6ef5",
-                borderRadius: "8px",
-                fontSize: "16px",
-                fontWeight: "500",
-                transition: "all 0.3s ease",
-              }}
-              className="hover:bg-indigo-700"
-            >
-              登录
-            </Button>
+            <div>
+              <Button
+                block
+                type="primary"
+                htmlType="submit"
+                loading={loginLoading}
+              >
+                登录
+              </Button>
+            </div>
           </Form.Item>
         </Form>
       </Card>

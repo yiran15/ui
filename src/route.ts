@@ -5,8 +5,10 @@ import RolePage from "./pages/role/Role";
 import LayoutPage from "./layout/Layout";
 import loginPage from "./pages/login/Login";
 import UserPage from "./pages/user/User";
-import PolicyPage from "./pages/policy/Policy";
+import PolicyPage from "./pages/api/Api";
 import InfoPage from "./pages/user/Info";
+import { Role } from "./types/user/user";
+import Test from "./pages/Test";
 export type MenuItem = Required<MenuProps>["items"][number];
 
 const router = createBrowserRouter([
@@ -30,7 +32,7 @@ const router = createBrowserRouter([
                 Component: RolePage,
               },
               {
-                path: "policy",
+                path: "api",
                 Component: PolicyPage,
               },
             ],
@@ -46,6 +48,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     Component: loginPage,
+  },
+  {
+    path: "/test",
+    Component: Test,
   },
 ]);
 
@@ -68,19 +74,19 @@ const adminMemuItem: MenuItem[] = [
         label: "角色列表",
       },
       {
-        key: "policy",
+        key: "api",
         icon: null,
-        label: "策略列表",
+        label: "API列表",
       },
     ],
   },
 ];
 
-const GetMemuItem = (roles: string[]): MenuItem[] => {
+const GetMemuItem = (roles: Role[]): MenuItem[] => {
   const menum: MenuItem[] = [];
-
+  // menum.push(...adminMemuItem);
   roles.some((role) => {
-    if (role === "admin") {
+    if (role.name === "admin" || role.id === "1") {
       menum.push(...adminMemuItem);
     }
   });

@@ -1,88 +1,119 @@
-import { RoleAdd } from "@/services/role";
-import type { PolicyOptions } from "@/types";
-import { useRequest } from "ahooks";
-import { Form, Input, Select } from "antd";
-import useApp from "antd/es/app/useApp";
+import { MessageInstance } from "antd/es/message/interface";
+import { Col, Form, Input, Row, Tag } from "antd";
 import ModalComponent from "../base/Modal";
+import TransferComponent from "../base/Transfer";
+import { useEffect, useState } from "react";
+import { GetApiList } from "@/services/api";
+import { useRequest } from "ahooks";
+import { CreateRole } from "@/services/role";
+import { ApiColumns } from "@/types/api/api.tsx";
 
-interface CreateRoleComponentProps {
+interface CreateRoleModalProps {
   open: boolean;
-  onCancel: () => void;
-  policyOptions: PolicyOptions[] | undefined;
-  refresh: () => void;
+  message: MessageInstance;
+  onClose: () => void;
+  refreshRoleList: () => void;
 }
-const CreateRoleComponent = ({
+
+export default function CreateRoleComponent({
   open,
-  onCancel,
-  policyOptions,
-  refresh,
-}: CreateRoleComponentProps) => {
+  message,
+  onClose,
+  refreshRoleList,
+}: CreateRoleModalProps) {
   const [form] = Form.useForm();
-  const { message } = useApp();
-
-  const reset = () => {
-    form.resetFields();
-    onCancel();
-  };
-  const handleCancle = () => {
-    reset();
-  };
-
-  const { run: roleAdd, loading: roleLoad } = useRequest(RoleAdd, {
+  const { run: createRun, loading: createLoading } = useRequest(CreateRole, {
     manual: true,
     onSuccess: () => {
       message.success("创建成功");
-      refresh();
-      reset();
+      onClose();
+      refreshRoleList();
     },
     onError: (err) => {
-      message.error(`${err.message}`);
+      message.error(err.message);
     },
   });
 
   const handleOk = () => {
     form.validateFields().then((values) => {
-      roleAdd(values);
+      const data = {
+        name: values.name,
+        description: values.description,
+        apis: targetKeys.map((id) => Number(id)),
+      };
+      createRun(data);
     });
   };
+
+  const [targetKeys, setTargetKeys] = useState<React.Key[]>([]);
+  const { run: policyRun, data: apiData } = useRequest(GetApiList, {
+    manual: true,
+    onError: (err) => {
+      message.error(err.message);
+    },
+  });
+
+  useEffect(() => {
+    if (open) {
+      policyRun({ page: 0, pageSize: 0 });
+    }
+  }, [open]);
   return (
     <ModalComponent
-      open={open}
-      handleCancel={handleCancle}
-      handleOk={handleOk}
-      confirmLoading={roleLoad}
       title="创建角色"
+      className="min-w-3/4"
+      open={open}
+      handleCancel={() => {
+        onClose();
+        form.resetFields();
+      }}
+      handleOk={handleOk}
+      closable={false}
+      confirmLoading={createLoading}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        size={"large"}
-        style={{ maxWidth: 600 }}
-      >
-        <Form.Item
-          name="name"
-          label="角色名称"
-          rules={[{ required: true, message: "请输入角色名称" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="describe"
-          label="角色描述"
-          rules={[{ required: true, message: "请输入角色描述" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item name="policyIds" label="角色权限">
-          <Select
-            mode="multiple"
-            placeholder="请选择角色权限"
-            options={policyOptions}
-          />
-        </Form.Item>
-      </Form>
+      <div>
+        <div className="font-bold text-12 mb-4">基础信息</div>
+        <Form form={form} size="middle">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="角色名称"
+                rules={[{ required: true, message: "请输入角色名称" }]}
+                name="name"
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="角色描述"
+                rules={[{ required: true, message: "请输入角色描述" }]}
+                name="description"
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </div>
+      <div>
+        <div className="font-bold text-12 mb-4">角色信息</div>
+        <TransferComponent
+          extraHeight={530}
+          titles={[
+            <Tag color="blue">未关联API</Tag>,
+            <Tag color="green">已关联API</Tag>,
+          ]}
+          dataSource={(apiData?.list || []).map((item) => ({
+            ...item,
+            key: item.id,
+          }))}
+          filterOption={(input, item) => item.name.includes(input)}
+          columns={ApiColumns()}
+          targetKeys={targetKeys}
+          setTargetKeys={setTargetKeys}
+        />
+      </div>
     </ModalComponent>
   );
-};
-
-export default CreateRoleComponent;
+}
