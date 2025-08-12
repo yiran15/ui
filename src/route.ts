@@ -82,14 +82,14 @@ const adminMemuItem: MenuItem[] = [
   },
 ];
 
-const GetMemuItem = (roles: Role[]): MenuItem[] => {
+const GetMemuItem = (_: Role[]): MenuItem[] => {
   const menum: MenuItem[] = [];
-  // menum.push(...adminMemuItem);
-  roles.some((role) => {
-    if (role.name === "admin" || role.id === "1") {
-      menum.push(...adminMemuItem);
-    }
-  });
+  menum.push(...adminMemuItem);
+  // roles.some((role) => {
+  //   if (role.name === "admin" || role.id === "1") {
+  //     menum.push(...adminMemuItem);
+  //   }
+  // });
 
   if (menuItem.length > 0) {
     menum.push(...menuItem);
