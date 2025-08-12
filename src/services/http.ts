@@ -4,9 +4,9 @@ import axios, { AxiosError } from "axios";
 let host = "";
 switch (import.meta.env.MODE) {
   case "development":
-    // host = "http://localhost:8080";
+    host = "http://localhost:8080";
     // host = "http://10.0.0.10:8080";
-    host = "https://qqlx.net";
+    // host = "https://qqlx.net";
     break;
   case "production": {
     const protocol = window.location.protocol;
@@ -59,7 +59,6 @@ apiClient.interceptors.response.use(
     if (error?.response?.status === 403) {
       return Promise.reject(new Error("权限拒绝"));
     }
-
     // 处理后端返回非业务错误
     const apiRes = error.response?.data as ApiResponse;
     return Promise.reject(new Error(apiRes.error || "请求失败"));

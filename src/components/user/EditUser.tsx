@@ -49,17 +49,15 @@ export default function EditUserComponent(props: EditUserProps) {
   const { run: roleListRun, data: roleListData } = useRequest(ListRole, {
     manual: true,
     defaultParams: [{ page: 0, pageSize: 0 }],
-    onSuccess: () => {},
+    onSuccess: () => {
+      userQueryRun(id);
+    },
     onError: (error) => {
       message.error(error.message);
     },
   });
 
-  const {
-    loading: userLoad,
-    run: userQueryRun,
-    data: userData,
-  } = useRequest(userQuery, {
+  const { loading: userLoad, run: userQueryRun } = useRequest(userQuery, {
     manual: true,
     onSuccess: (data) => {
       if (data) {
@@ -79,7 +77,7 @@ export default function EditUserComponent(props: EditUserProps) {
           avatar: data.avatar,
         });
       }
-      setTargetKeys(userData?.roles?.map((role) => role.id) || []);
+      setTargetKeys(data?.roles?.map((role) => role.id) || []);
     },
     onError: (error) => {
       message.error(error.message);
@@ -87,11 +85,10 @@ export default function EditUserComponent(props: EditUserProps) {
   });
 
   useEffect(() => {
-    if (open === true && id) {
-      userQueryRun(id);
+    if (open && id) {
       roleListRun({ page: 0, pageSize: 0 });
     }
-  }, [open, id, userQueryRun, roleListRun]);
+  }, [open, id, roleListRun]);
 
   const [targetKeys, setTargetKeys] = useState<React.Key[]>([]);
   const drawerClose = () => {
