@@ -1,4 +1,4 @@
-// services/api.ts
+// services/http.ts
 import { ApiResponse } from "@/types";
 import axios, { AxiosError } from "axios";
 let host = "";
@@ -17,7 +17,7 @@ switch (import.meta.env.MODE) {
   }
 }
 console.log("host", host);
-
+export const API_HOST = host;
 const apiClient = axios.create({
   baseURL: host,
   timeout: 10000,

@@ -86,3 +86,8 @@ export interface UserUpPwdRequest {
   oldPassword: string;
   newPassword: string;
 }
+
+export interface OAuthLoginRequest {
+  user: UserInfoResponse;
+  token: string;
+}

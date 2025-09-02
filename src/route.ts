@@ -9,6 +9,7 @@ import PolicyPage from "./pages/api/Api";
 import InfoPage from "./pages/user/Info";
 import { Role } from "./types/user/user";
 import Test from "./pages/Test";
+import OAuthPage from "./pages/login/OAuth";
 export type MenuItem = Required<MenuProps>["items"][number];
 
 const router = createBrowserRouter([
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     Component: loginPage,
+  },
+  {
+    path: "/oauth/login",
+    Component: OAuthPage,
   },
   {
     path: "/test",
