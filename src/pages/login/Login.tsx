@@ -1,15 +1,36 @@
 import { UserLogin } from "@/services/user";
 import { useRequest } from "ahooks";
-import { App, Button, Card, Checkbox, Form, Input, Typography } from "antd";
+import {
+  App,
+  Button,
+  Card,
+  Checkbox,
+  Divider,
+  Form,
+  Input,
+  Typography,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import bgImage from "@/assets/login.png";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import KeycloakSvg from "@/assets/keycloak.svg?react";
+import FeiShuSvg from "@/assets/feishu.svg?react";
+import { GetOAuth2Provider } from "@/services/oauth2";
+import { useState } from "react";
 const { Title } = Typography;
 const LoginPage = () => {
   const { message } = App.useApp();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const from = searchParams.get("from");
+  const [oauth2Providers, setOauth2Providers] = useState<string[]>([]);
+  const { loading: oauth2Loading } = useRequest(GetOAuth2Provider, {
+    onSuccess: (res) => {
+      console.log(res);
+      setOauth2Providers(res);
+    },
+  });
+
   const { run: loginRun, loading: loginLoading } = useRequest(UserLogin, {
     manual: true,
     onError: (error) => {
@@ -28,6 +49,20 @@ const LoginPage = () => {
   // 登录处理逻辑
   const onFinish = (values: { email: string; password: string }) => {
     loginRun(values);
+  };
+
+  // 飞书 SSO 登录处理逻辑 (待实现)
+  const handleFeishuLogin = () => {
+    // 在这里添加飞书 SSO 的重定向或其他逻辑
+    message.info("飞书登录功能待实现");
+    // window.location.href = 'YOUR_FEISHU_SSO_URL';
+  };
+
+  // Keycloak SSO 登录处理逻辑 (待实现)
+  const handleKeycloakLogin = () => {
+    // 在这里添加 Keycloak SSO 的重定向或其他逻辑
+    message.info("Keycloak 登录功能待实现");
+    // window.location.href = 'YOUR_KEYCLOAK_SSO_URL';
   };
 
   return (
@@ -103,6 +138,24 @@ const LoginPage = () => {
             </div>
           </Form.Item>
         </Form>
+        {/* SSO 登录区域 */}
+        <Divider>其他登录方式</Divider>
+        <div className="flex justify-center gap-4">
+          <Button
+            icon={<FeiShuSvg width="24" height="24" />}
+            onClick={handleFeishuLogin}
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            飞书登录
+          </Button>
+          <Button
+            icon={<KeycloakSvg width="20" height="20" />}
+            onClick={handleKeycloakLogin}
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            Keycloak 登录
+          </Button>
+        </div>
       </Card>
     </div>
   );
