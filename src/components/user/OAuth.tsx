@@ -3,14 +3,13 @@ import { useRequest } from "ahooks";
 import { Button, Divider } from "antd";
 import FeiShuSvg from "@/assets/feishu.svg?react";
 import KeycloakSvg from "@/assets/keycloak.svg?react";
-import { API_HOST } from "@/services/http";
 
 export default function OAuthComponent() {
   const { data } = useRequest(GetOAuth2Provider);
-  const OAUTH_LOGIN = (provider: "feishu" | "keycloak") =>
-    `${API_HOST}/api/v1/oauth2/login?provider=${provider}`;
+  const oauthLogin = (provider: "feishu" | "keycloak") =>
+    `/api/v1/oauth2/login?provider=${provider}`;
   const handleLogin = (provider: "feishu" | "keycloak") => {
-    window.location.href = OAUTH_LOGIN(provider);
+    window.location.href = oauthLogin(provider);
   };
 
   const getOAuth2Provider = (data: string[]) => {

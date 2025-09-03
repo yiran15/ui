@@ -103,8 +103,12 @@ const InfoPage = () => {
 
   return (
     <div
+      style={{
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        background: token.colorBgContainerDisabled,
+      }}
       className="min-h-screen flex"
-      style={{ background: token.colorBgContainerDisabled }}
     >
       <Card
         title="个人信息"
@@ -162,7 +166,9 @@ const InfoPage = () => {
               {userInfo?.email}
             </Descriptions.Item>
             <Descriptions.Item label="角色">
-              {userInfo?.roles?.map((role) =>  <Tag color="blue">{(role.name)}</Tag>)}
+              {userInfo?.roles?.map((role) => (
+                <Tag color="blue">{role.name}</Tag>
+              ))}
             </Descriptions.Item>
             <Descriptions.Item label="状态">
               <span

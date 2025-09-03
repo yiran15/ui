@@ -22,7 +22,6 @@ const LoginPage = () => {
       }
     },
     onSuccess: (res) => {
-      console.log(res);
       localStorage.setItem("token", res?.token);
       navigate(from ? decodeURIComponent(from) : "/", { replace: true });
     },
@@ -49,7 +48,7 @@ const LoginPage = () => {
         }}
       >
         <Title level={2} className="text-center text-gray-800 mb-8 font-bold">
-          登录
+          用户登录
         </Title>
 
         <Form

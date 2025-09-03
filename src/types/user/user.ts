@@ -91,3 +91,9 @@ export interface OAuthLoginRequest {
   user: UserInfoResponse;
   token: string;
 }
+
+export enum UserStatus {
+  Active = 1,
+  Disabled = 2,
+  Inactive = 3,
+}
