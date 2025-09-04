@@ -4,20 +4,28 @@
 
 前端项目
 
-基于 react + typescript + antd + vite
-
-[后端](https://github.com/yiran15/api-server)
+基于 react + typescript + antd + vite 构建的前端项目，[后端地址](https://github.com/yiran15/api-server)
 
 ## 功能
 
-- 用户管理: 增删改查
+### 用户管理
+
 ![用户管理](docs/img/user.png)
 
-- 角色管理: 增删改查
+### 角色管理
+
 ![角色管理](docs/img/role.png)
 
-- 接口权限管理: 增删改查
+### 接口权限管理
+
 ![接口权限管理](docs/img/api.png)
+
+### OAuth2 登录
+
+支持 OAuth2 登录，目前支持飞书、keycloak。
+
+![OAuth2 登录](docs/img/oauth2-1.png)
+![OAuth2 登录](docs/img/oauth2-feishu.png)
 
 ## 启动
 

@@ -4,12 +4,14 @@ import { App, Button, Card, Checkbox, Form, Input, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 import bgImage from "@/assets/login.png";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import OAuthComponent from "@/components/user/OAuth";
 const { Title } = Typography;
 const LoginPage = () => {
   const { message } = App.useApp();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const from = searchParams.get("from");
+
   const { run: loginRun, loading: loginLoading } = useRequest(UserLogin, {
     manual: true,
     onError: (error) => {
@@ -20,7 +22,6 @@ const LoginPage = () => {
       }
     },
     onSuccess: (res) => {
-      console.log(res);
       localStorage.setItem("token", res?.token);
       navigate(from ? decodeURIComponent(from) : "/", { replace: true });
     },
@@ -47,7 +48,7 @@ const LoginPage = () => {
         }}
       >
         <Title level={2} className="text-center text-gray-800 mb-8 font-bold">
-          登录
+          用户登录
         </Title>
 
         <Form
@@ -103,6 +104,7 @@ const LoginPage = () => {
             </div>
           </Form.Item>
         </Form>
+        <OAuthComponent />
       </Card>
     </div>
   );

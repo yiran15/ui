@@ -1,25 +1,9 @@
-// services/api.ts
+// services/http.ts
 import { ApiResponse } from "@/types";
 import axios, { AxiosError } from "axios";
-let host = "";
-switch (import.meta.env.MODE) {
-  case "development":
-    host = "http://localhost:8080";
-    // host = "http://10.0.0.10:8080";
-    // host = "https://qqlx.net";
-    break;
-  case "production": {
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const prot = window.location.port;
-    host = `${protocol}//${hostname}:${prot}/`;
-    break;
-  }
-}
-console.log("host", host);
 
 const apiClient = axios.create({
-  baseURL: host,
+  withCredentials: true,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
