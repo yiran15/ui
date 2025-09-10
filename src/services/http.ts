@@ -45,7 +45,9 @@ apiClient.interceptors.response.use(
     }
     // 处理后端返回非业务错误
     const apiRes = error.response?.data as ApiResponse;
-    return Promise.reject(new Error(apiRes.error || "请求失败"));
+    console.log(apiRes);
+
+    return Promise.reject(new Error(apiRes.msg || "网络错误"));
   }
 );
 

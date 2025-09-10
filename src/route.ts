@@ -8,7 +8,7 @@ import UserPage from "./pages/user/User";
 import PolicyPage from "./pages/api/Api";
 import InfoPage from "./pages/user/Info";
 import { Role } from "./types/user/user";
-import Test from "./pages/Test";
+import Test from "./test/Test";
 import OAuthPage from "./pages/login/OAuth";
 export type MenuItem = Required<MenuProps>["items"][number];
 
