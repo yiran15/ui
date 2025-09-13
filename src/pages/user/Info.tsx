@@ -133,7 +133,7 @@ const InfoPage = () => {
           <Descriptions
             column={1}
             bordered
-            className="bg-gray-50 rounded-lg p-4"
+            className="p-4"
             styles={{
               label: {
                 color: token.colorTextSecondary,
