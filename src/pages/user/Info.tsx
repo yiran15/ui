@@ -10,19 +10,18 @@ import {
   Input,
   Modal,
   Avatar,
-  Descriptions,
   theme,
   Tag,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-
+import { UserOutlined, LockOutlined, EditOutlined } from "@ant-design/icons";
 const InfoPage = () => {
   const { token } = theme.useToken();
   const { message, modal } = App.useApp();
   const [form] = Form.useForm();
   const [pwdForm] = Form.useForm();
   const [showPwdModal, setShowPwdModal] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout>(undefined);
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // 获取用户信息
   const {
@@ -103,187 +102,204 @@ const InfoPage = () => {
 
   return (
     <div
+      className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700"
       style={{
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        background: token.colorBgContainerDisabled,
+        minHeight: "100vh",
+        minWidth: "100vw",
+        background: `linear-gradient(120deg, ${token.colorBgContainer} 0%, ${token.colorBgLayout} 100%)`,
       }}
-      className="min-h-screen flex"
     >
-      <Card
-        title="个人信息"
-        className="shadow-lg rounded-lg flex-1"
-        styles={{
-          header: {
-            background: `${token.colorPrimaryBg}`,
-            borderBottom: `1px solid ${token.colorBorderSecondary}`,
-            fontSize: token.fontSizeLG,
-          },
-          body: {
-            padding: "24px 32px",
-            height: "calc(100% - 57px)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          },
-        }}
-      >
-        <div className="w-full max-w-3xl">
-          {/* 展示区域 */}
-          <Descriptions
-            column={1}
-            bordered
-            className="bg-gray-50 rounded-lg p-4"
-            styles={{
-              label: {
-                color: token.colorTextSecondary,
-                width: 100, // 固定标签宽度
-                whiteSpace: "nowrap",
-                padding: "12px 16px",
-                fontSize: token.fontSize,
-              },
-              content: {
-                color: token.colorText,
-                fontWeight: token.fontWeightStrong,
-                padding: "12px 16px",
-                maxWidth: 300, // 限制内容最大宽度
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              },
+      <Card className="w-full max-w-6xl h-auto mx-auto rounded-2xl shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg flex flex-col justify-center">
+        {/* 顶部个人信息区域 */}
+        <div
+          className="p-8 pb-32 relative overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryActive})`,
+            borderTopLeftRadius: "1rem",
+            borderTopRightRadius: "1rem",
+          }}
+        >
+          {/* 装饰背景 */}
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 50% 50%, white 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
             }}
-          >
-            <Descriptions.Item label="头像">
+          />
+
+          <div className="relative z-10 flex items-center gap-8">
+            <div className="relative group">
               <Avatar
                 src={userInfo?.avatar}
-                className="!w-20 !h-20 !text-2xl shadow-md border-2 border-white"
+                size={96}
+                icon={!userInfo?.avatar && <UserOutlined />}
+                className="border-4 border-white/30 shadow-xl transition-transform duration-300 group-hover:scale-105"
               />
-            </Descriptions.Item>
-            <Descriptions.Item label="用户ID">{userInfo?.id}</Descriptions.Item>
-            <Descriptions.Item label="用户名">
-              {userInfo?.name}
-            </Descriptions.Item>
-            <Descriptions.Item label="邮箱">
-              {userInfo?.email}
-            </Descriptions.Item>
-            <Descriptions.Item label="角色">
-              {userInfo?.roles?.map((role) => (
-                <Tag color="blue">{role.name}</Tag>
-              ))}
-            </Descriptions.Item>
-            <Descriptions.Item label="状态">
-              <span
-                style={{
-                  color:
-                    userInfo?.status === 1
-                      ? token.colorSuccess
-                      : token.colorError,
-                }}
-              >
-                {userInfo?.status === 1 ? "正常" : "禁用"}
-              </span>
-            </Descriptions.Item>
-          </Descriptions>
+            </div>
 
-          {/* 编辑表单 */}
-          <Form
-            form={form}
-            layout="vertical"
-            className="flex-1 min-w-[300px]"
-            onFinish={onFinish}
-          >
-            <div className=" rounded-lg p-4 mb-6">
-              <Form.Item
-                label="头像链接"
-                name="avatar"
-                rules={[
-                  { type: "url", message: "请输入有效的图片链接" },
-                  { required: true, message: "请输入头像链接" },
-                ]}
-              >
-                <Input
-                  placeholder="输入新头像URL"
-                  allowClear
-                  className="!rounded-lg"
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="昵称"
-                name="nickName"
-                rules={[{ required: true, message: "请输入昵称" }]}
-              >
-                <Input
-                  placeholder="请输入昵称"
-                  allowClear
-                  className="hover:!border-primary !rounded-lg"
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="手机号"
-                name="mobile"
-                rules={[
-                  { required: true, message: "请输入手机号" },
-                  { pattern: /^1[3-9]\d{9}$/, message: "手机号格式不正确" },
-                ]}
-              >
-                <Input
-                  placeholder="请输入手机号"
-                  allowClear
-                  className="hover:!border-primary !rounded-lg"
-                />
-              </Form.Item>
-
-              <div className="flex gap-4 mt-auto pt-6">
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    modal.confirm({
-                      title: "确认修改个人信息？",
-                      okText: "确认",
-                      okType: "danger",
-                      cancelText: "取消",
-                      onOk: () => {
-                        form.submit();
-                      },
-                    });
-                  }}
-                  className="!rounded-lg"
-                  loading={upLoad}
-                  style={{
-                    background: token.colorPrimary,
-                    minWidth: 120,
-                    height: 40,
-                  }}
-                >
-                  保存修改
-                </Button>
-                <Button
-                  onClick={() => setShowPwdModal(true)}
-                  className="!rounded-lg"
-                  style={{
-                    borderColor: token.colorPrimary,
-                    color: token.colorPrimary,
-                    minWidth: 120,
-                    height: 40,
-                  }}
-                >
-                  修改密码
-                </Button>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-white mb-3">
+                {userInfo?.nickName || userInfo?.name || "未设置昵称"}
+              </h1>
+              <div className="flex flex-wrap gap-2">
+                {userInfo?.roles?.map((role) => (
+                  <Tag
+                    key={role.name}
+                    className="border-0 bg-white/20 text-white px-3 py-1 rounded-full text-sm"
+                  >
+                    {role.name}
+                  </Tag>
+                ))}
               </div>
             </div>
-          </Form>
+
+            <Button
+              type="default"
+              ghost
+              icon={<LockOutlined />}
+              onClick={() => setShowPwdModal(true)}
+              className="border-white/60 text-white hover:text-blue-500 hover:border-white hover:bg-white transition-colors duration-300"
+            >
+              修改密码
+            </Button>
+          </div>
+        </div>
+
+        {/* 主要内容区域 */}
+        <div className="px-8 -mt-24 pb-8">
+          <Card className="shadow-lg rounded-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* 基本信息展示 */}
+              <div className="space-y-6">
+                <h2 className="text-lg font-medium mb-6 flex items-center gap-2">
+                  <UserOutlined className="text-gray-400" />
+                  基本信息
+                </h2>
+                <div className="space-y-4">
+                  {[
+                    { label: "ID", value: userInfo?.id },
+                    { label: "用户名", value: userInfo?.name },
+                    { label: "邮箱", value: userInfo?.email },
+                    {
+                      label: "角色",
+                      value: userInfo?.roles?.length
+                        ? userInfo.roles.map((role) => role.name).join("、")
+                        : "无角色",
+                    },
+                    {
+                      label: "状态",
+                      value: (
+                        <Tag
+                          color={userInfo?.status === 1 ? "success" : "error"}
+                          className="border-0 ml-0"
+                        >
+                          {userInfo?.status === 1 ? "正常" : "禁用"}
+                        </Tag>
+                      ),
+                    },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex items-center">
+                      <span className="text-gray-500 dark:text-gray-400 w-24">
+                        {label}
+                      </span>
+                      <span className="flex-1 font-medium">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 编辑表单 */}
+              <div className="space-y-6">
+                <h2 className="text-lg font-medium mb-6 flex items-center gap-2">
+                  <EditOutlined className="text-gray-400" />
+                  修改信息
+                </h2>
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={onFinish}
+                  className="space-y-4"
+                >
+                  <Form.Item
+                    label="头像链接"
+                    name="avatar"
+                    rules={[
+                      { type: "url", message: "请输入有效的图片链接" },
+                      { required: true, message: "请输入头像链接" },
+                    ]}
+                  >
+                    <Input
+                      placeholder="输入新头像URL"
+                      allowClear
+                      className="rounded-lg"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="昵称"
+                    name="nickName"
+                    rules={[{ required: true, message: "请输入昵称" }]}
+                  >
+                    <Input
+                      placeholder="请输入昵称"
+                      allowClear
+                      className="rounded-lg"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="手机号"
+                    name="mobile"
+                    rules={[
+                      { required: true, message: "请输入手机号" },
+                      { pattern: /^1[3-9]\d{9}$/, message: "手机号格式不正确" },
+                    ]}
+                  >
+                    <Input
+                      placeholder="请输入手机号"
+                      allowClear
+                      className="rounded-lg"
+                    />
+                  </Form.Item>
+
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        modal.confirm({
+                          title: "确认修改个人信息？",
+                          okText: "确认",
+                          okType: "primary",
+                          cancelText: "取消",
+                          onOk: () => form.submit(),
+                        });
+                      }}
+                      loading={upLoad}
+                      block
+                      size="large"
+                      className="rounded-lg"
+                    >
+                      保存修改
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
+            </div>
+          </Card>
         </div>
       </Card>
 
-      {/* 密码修改弹窗（保持不变） */}
+      {/* 密码修改弹窗 */}
       <Modal
-        confirmLoading={upPwdLoad}
         title="修改密码"
         open={showPwdModal}
         onCancel={() => setShowPwdModal(false)}
         footer={null}
+        confirmLoading={upPwdLoad}
         destroyOnClose
+        centered
         styles={{
           header: {
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
@@ -294,7 +310,12 @@ const InfoPage = () => {
           },
         }}
       >
-        <Form form={pwdForm} layout="vertical" onFinish={onPwdFinish}>
+        <Form
+          form={pwdForm}
+          layout="vertical"
+          onFinish={onPwdFinish}
+          className="space-y-4"
+        >
           <Form.Item
             label="原密码"
             name="oldPassword"
@@ -305,7 +326,7 @@ const InfoPage = () => {
           >
             <Input.Password
               placeholder="请输入原密码"
-              className="hover:!border-primary"
+              className="rounded-lg hover:border-blue-400"
             />
           </Form.Item>
 
@@ -319,7 +340,7 @@ const InfoPage = () => {
           >
             <Input.Password
               placeholder="请输入新密码"
-              className="hover:!border-primary"
+              className="rounded-lg hover:border-blue-400"
             />
           </Form.Item>
 
@@ -341,17 +362,13 @@ const InfoPage = () => {
           >
             <Input.Password
               placeholder="请确认新密码"
-              className="hover:!border-primary"
+              className="rounded-lg hover:border-blue-400"
             />
           </Form.Item>
 
-          <div className="flex justify-end gap-4 mt-6">
+          <div className="flex justify-end gap-4 pt-4">
             <Button onClick={() => setShowPwdModal(false)}>取消</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{ background: token.colorPrimary }}
-            >
+            <Button type="primary" htmlType="submit" loading={upPwdLoad}>
               确认修改
             </Button>
           </div>
