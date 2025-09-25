@@ -33,7 +33,11 @@ apiClient.interceptors.response.use(
       // 后端 res 中的 data
       return res.data;
     } else {
-      return Promise.reject(new Error(res.error || "请求失败"));
+      useErrorStore.getState().addError({
+        error: res.message || "network error",
+        requestId: res.requestId || "",
+      });
+      return Promise.reject(new Error(res.message || "network error"));
     }
   },
   (error: AxiosError) => {
@@ -42,12 +46,12 @@ apiClient.interceptors.response.use(
       localStorage.removeItem("token");
     }
     if (error?.response?.status === 403) {
-      return Promise.reject(new Error("权限拒绝"));
+      return Promise.reject(new Error("access forbidden"));
     }
     // 处理后端返回非业务错误
     const apiRes = error.response?.data as ApiResponse;
     useErrorStore.getState().addError({
-      error: apiRes?.error || error.message || "网络错误",
+      error: apiRes?.error || error.message || "network error",
       requestId: apiRes?.requestId || "",
     });
     return Promise.reject(error);

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import bgImage from "@/assets/login.png";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import OAuthComponent from "@/components/user/OAuth";
+// import { useErrorStore } from "@/stores/useErrorStore";
 const { Title } = Typography;
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -17,6 +18,29 @@ const LoginPage = () => {
       localStorage.setItem("token", res?.token);
       navigate(from ? decodeURIComponent(from) : "/", { replace: true });
     },
+    // onError: () => {
+    //   useErrorStore
+    //     .getState()
+    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
+    //   useErrorStore
+    //     .getState()
+    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
+    //   useErrorStore
+    //     .getState()
+    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
+    //   useErrorStore
+    //     .getState()
+    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
+    //   useErrorStore
+    //     .getState()
+    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
+    //   useErrorStore
+    //     .getState()
+    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
+    //   useErrorStore
+    //     .getState()
+    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
+    // },
   });
   // 登录处理逻辑
   const onFinish = (values: { email: string; password: string }) => {
