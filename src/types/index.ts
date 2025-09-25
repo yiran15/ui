@@ -5,6 +5,7 @@ export interface ApiResponse<T = unknown> {
   data: T;
   msg?: string;
   error: string;
+  requestId?: string;
 }
 
 export interface Options {

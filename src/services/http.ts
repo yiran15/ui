@@ -1,4 +1,5 @@
 // services/http.ts
+import { useErrorStore } from "@/stores/useErrorStore";
 import { ApiResponse } from "@/types";
 import axios, { AxiosError } from "axios";
 
@@ -45,9 +46,11 @@ apiClient.interceptors.response.use(
     }
     // 处理后端返回非业务错误
     const apiRes = error.response?.data as ApiResponse;
-    console.log(apiRes);
-
-    return Promise.reject(new Error(apiRes.msg || "网络错误"));
+    useErrorStore.getState().addError({
+      error: apiRes?.error || error.message || "网络错误",
+      requestId: apiRes?.requestId || "",
+    });
+    return Promise.reject(error);
   }
 );
 
