@@ -15,7 +15,8 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://qqlx.net",
+        // target: "https://qqlx.net",
+        target: "http://10.0.0.5:8080",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("proxyRes", (_, __, res) => {

@@ -1,4 +1,5 @@
 // services/http.ts
+import { ErrorItem } from "@/components/ErrList";
 import { useErrorStore } from "@/stores/useErrorStore";
 import { ApiResponse } from "@/types";
 import axios, { AxiosError } from "axios";
@@ -42,22 +43,40 @@ apiClient.interceptors.response.use(
     }
   },
   (error: AxiosError) => {
-    // 新增 401 状态码处理
-    if (error?.response?.status === 401) {
-      localStorage.removeItem("token");
-    }
-    if (error?.response?.status === 403) {
-      return Promise.reject(new Error("access forbidden"));
+    const apiRes = error.response?.data as ApiResponse;
+    const status = error.response?.status;
+
+    // 定义错误消息映射
+    const errorMessages = {
+      401: "unauthorized, please login",
+      403: "access forbidden",
+    } as const;
+
+    // 构建错误状态
+    const errState: ErrorItem = {
+      error: "",
+      requestId: apiRes?.requestId || "",
+    };
+
+    // 处理特定状态码的错误
+    if (status && status in errorMessages) {
+      errState.error = errorMessages[status as keyof typeof errorMessages];
+      useErrorStore.getState().addError(errState);
+
+      // 401 状态特殊处理：清除 token
+      if (status === 401) {
+        localStorage.removeItem("token");
+      }
+
+      return Promise.reject(new Error(errState.error));
     }
 
-    // 排除登录接口的错误记录
+    // 处理一般错误（排除登录接口）
     if (error.config?.url !== "/api/v1/user/login") {
-      const apiRes = error.response?.data as ApiResponse;
-      useErrorStore.getState().addError({
-        error: apiRes?.error || error.message || "network error",
-        requestId: apiRes?.requestId || "",
-      });
+      errState.error = apiRes?.error || error.message || "network error";
+      useErrorStore.getState().addError(errState);
     }
+
     return Promise.reject(error);
   }
 );
