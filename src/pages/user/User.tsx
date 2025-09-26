@@ -66,18 +66,12 @@ const UserPage = () => {
     run,
   } = useRequest(UserList, {
     manual: true,
-    onError: (error) => {
-      message.error(error.message);
-    },
   });
 
   const { run: delUserRun, loading: delUserLoad } = useRequest(UserDelete, {
     manual: true,
     onSuccess: () => {
       refreshUserList();
-    },
-    onError: (error) => {
-      message.error(error.message);
     },
   });
 
@@ -128,9 +122,6 @@ const UserPage = () => {
       onSuccess: () => {
         message.success("更新成功");
         refreshUserList();
-      },
-      onError: (error) => {
-        message.error(error.message);
       },
     }
   );

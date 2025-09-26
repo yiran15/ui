@@ -43,9 +43,6 @@ const UpdatePolicyComponent = ({
       refresh();
       handleCancle();
     },
-    onError: (error) => {
-      message.error(error.message);
-    },
   });
   const handleCancle = () => {
     onCancel();

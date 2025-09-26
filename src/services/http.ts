@@ -27,17 +27,18 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => {
-    // res ApiResponse 类型
     const res = response.data;
     if (res.code === 0) {
       // 后端 res 中的 data
       return res.data;
     } else {
       useErrorStore.getState().addError({
-        error: res.message || "network error",
+        error: res.message || "network error, please try again later",
         requestId: res.requestId || "",
       });
-      return Promise.reject(new Error(res.message || "network error"));
+      return Promise.reject(
+        new Error(res.message || "network error, please try again later")
+      );
     }
   },
   (error: AxiosError) => {
@@ -48,12 +49,15 @@ apiClient.interceptors.response.use(
     if (error?.response?.status === 403) {
       return Promise.reject(new Error("access forbidden"));
     }
-    // 处理后端返回非业务错误
-    const apiRes = error.response?.data as ApiResponse;
-    useErrorStore.getState().addError({
-      error: apiRes?.error || error.message || "network error",
-      requestId: apiRes?.requestId || "",
-    });
+
+    // 排除登录接口的错误记录
+    if (error.config?.url !== "/api/v1/user/login") {
+      const apiRes = error.response?.data as ApiResponse;
+      useErrorStore.getState().addError({
+        error: apiRes?.error || error.message || "network error",
+        requestId: apiRes?.requestId || "",
+      });
+    }
     return Promise.reject(error);
   }
 );

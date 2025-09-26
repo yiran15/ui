@@ -38,15 +38,24 @@ export default function ThemeProvider({
     <GlobalContext.Provider value={contextValue}>
       <ConfigProvider
         theme={{
+          token: {
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
+          },
           algorithm:
             mode === "dark"
               ? antdTheme.darkAlgorithm
               : antdTheme.defaultAlgorithm,
           components: {
             Table: {
+              fontSize: 13,
               headerBorderRadius: 8,
-              cellFontSize: 13,
-              cellPaddingBlock: 16,
+              cellPaddingInline: 4,
+              cellPaddingInlineMD: 4,
+              cellPaddingInlineSM: 4,
+              cellPaddingBlock: 4,
+              cellPaddingBlockMD: 4,
+              cellPaddingBlockSM: 4,
             },
             Pagination: {
               fontSize: 13,

@@ -1,13 +1,4 @@
-import {
-  Button,
-  Col,
-  Drawer,
-  Form,
-  Input,
-  Popconfirm,
-  Row,
-  Tag,
-} from "antd";
+import { Button, Col, Drawer, Form, Input, Popconfirm, Row, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { useRequest } from "ahooks";
 import { QueryRole, UpdateRole } from "@/services/role";
@@ -40,9 +31,6 @@ const RoleEditComponent = ({
         form.setFieldsValue(data);
         setTargetKeys(data?.apis?.map((api) => api.id) || []);
       },
-      onError: (err) => {
-        message.error(err.message);
-      },
     }
   );
 
@@ -57,9 +45,6 @@ const RoleEditComponent = ({
 
   const { run: policyRun, data: apiData } = useRequest(GetApiList, {
     manual: true,
-    onError: (err) => {
-      message.error(err.message);
-    },
   });
 
   const { run: updateRoleRun, loading: updateRoleLoad } = useRequest(
@@ -70,9 +55,6 @@ const RoleEditComponent = ({
         message.success("修改成功");
         refreshRoleList();
         setConfirmLoading(false);
-      },
-      onError: (err) => {
-        message.error(err.message);
       },
     }
   );

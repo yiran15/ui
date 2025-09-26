@@ -23,9 +23,6 @@ const CreateUserModal = ({ open, onClose, refresh }: CreateUserModalProps) => {
       handleCancel();
       refresh();
     },
-    onError: (err) => {
-      message.error(err.message);
-    },
   });
 
   const handleOk = async () => {
@@ -46,10 +43,6 @@ const CreateUserModal = ({ open, onClose, refresh }: CreateUserModalProps) => {
   const { run: roleListRun, data: roleListData } = useRequest(ListRole, {
     manual: true,
     defaultParams: [{ page: 0, pageSize: 0 }],
-    onSuccess: () => {},
-    onError: (error) => {
-      message.error(error.message);
-    },
   });
 
   const [targetKeys, setTargetKeys] = useState<React.Key[]>([]);

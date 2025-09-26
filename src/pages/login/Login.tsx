@@ -5,9 +5,11 @@ import { useNavigate } from "react-router-dom";
 import bgImage from "@/assets/login.png";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import OAuthComponent from "@/components/user/OAuth";
-// import { useErrorStore } from "@/stores/useErrorStore";
+import useApp from "antd/es/app/useApp";
+import Error from "@/utils/error";
 const { Title } = Typography;
 const LoginPage = () => {
+  const app = useApp();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const from = searchParams.get("from");
@@ -18,29 +20,9 @@ const LoginPage = () => {
       localStorage.setItem("token", res?.token);
       navigate(from ? decodeURIComponent(from) : "/", { replace: true });
     },
-    // onError: () => {
-    //   useErrorStore
-    //     .getState()
-    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
-    //   useErrorStore
-    //     .getState()
-    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
-    //   useErrorStore
-    //     .getState()
-    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
-    //   useErrorStore
-    //     .getState()
-    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
-    //   useErrorStore
-    //     .getState()
-    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
-    //   useErrorStore
-    //     .getState()
-    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
-    //   useErrorStore
-    //     .getState()
-    //     .addError({ error: "test error", requestId: "xxxxxxxxxx" });
-    // },
+    onError: (error: Error) => {
+      Error(error, app.message);
+    },
   });
   // 登录处理逻辑
   const onFinish = (values: { email: string; password: string }) => {

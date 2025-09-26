@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { GlobalContext } from "@/components/ThemeProvider";
 import {
-  App,
   Avatar,
   Button,
   Dropdown,
@@ -30,16 +29,12 @@ export default function AppHeader({
   userData,
   userLoad,
 }: AppHeaderProps) {
-  const { message } = App.useApp();
   const { theme } = useContext(GlobalContext);
   const { run: logoutRun } = useRequest(UserLogout, {
     manual: true,
     onSuccess: () => {
       window.location.href = "/login";
       localStorage.removeItem("token");
-    },
-    onError: (error) => {
-      message.error(error.message);
     },
   });
 
