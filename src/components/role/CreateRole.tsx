@@ -29,9 +29,6 @@ export default function CreateRoleComponent({
       onClose();
       refreshRoleList();
     },
-    onError: (err) => {
-      message.error(err.message);
-    },
   });
 
   const handleOk = () => {
@@ -48,9 +45,6 @@ export default function CreateRoleComponent({
   const [targetKeys, setTargetKeys] = useState<React.Key[]>([]);
   const { run: policyRun, data: apiData } = useRequest(GetApiList, {
     manual: true,
-    onError: (err) => {
-      message.error(err.message);
-    },
   });
 
   useEffect(() => {

@@ -1,29 +1,27 @@
 import { UserLogin } from "@/services/user";
 import { useRequest } from "ahooks";
-import { App, Button, Card, Checkbox, Form, Input, Typography } from "antd";
+import { Button, Card, Checkbox, Form, Input, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 import bgImage from "@/assets/login.png";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import OAuthComponent from "@/components/user/OAuth";
+import useApp from "antd/es/app/useApp";
+import Error from "@/utils/error";
 const { Title } = Typography;
 const LoginPage = () => {
-  const { message } = App.useApp();
+  const app = useApp();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const from = searchParams.get("from");
 
   const { run: loginRun, loading: loginLoading } = useRequest(UserLogin, {
     manual: true,
-    onError: (error) => {
-      if (error.message === "object not found") {
-        message.error("用户不存在");
-      } else {
-        message.error(error.message);
-      }
-    },
     onSuccess: (res) => {
       localStorage.setItem("token", res?.token);
       navigate(from ? decodeURIComponent(from) : "/", { replace: true });
+    },
+    onError: (error: Error) => {
+      Error(error, app.message);
     },
   });
   // 登录处理逻辑

@@ -38,13 +38,6 @@ const RolePage = () => {
       message.success("删除成功");
       refreshRoleList();
     },
-    onError: (err) => {
-      message.open({
-        type: "error",
-        duration: 5,
-        content: `${err.message}`,
-      });
-    },
   });
 
   const [roleId, setRoleId] = useState("");
@@ -89,7 +82,6 @@ const RolePage = () => {
   };
 
   const [createRoleOpen, setCreateRoleOpen] = useState<boolean>(false);
-
 
   const runList = () => {
     const params: RoleListRequest = {

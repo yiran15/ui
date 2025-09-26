@@ -60,9 +60,6 @@ export default function UpdatePasswordPage() {
           }
         }
       },
-      onError(e) {
-        message.error(e.message);
-      },
     }
   );
 

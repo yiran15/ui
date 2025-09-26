@@ -27,9 +27,6 @@ const CreateApiComponent = ({
       refresh();
       handleCancle();
     },
-    onError: (err) => {
-      message.error(`${err.message}`);
-    },
   });
   const handleOk = () => {
     form.validateFields().then((values) => {

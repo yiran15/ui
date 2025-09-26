@@ -5,7 +5,6 @@ import Sider from "antd/es/layout/Sider";
 import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
-import useApp from "antd/es/app/useApp";
 import { useRequest } from "ahooks";
 import { UserInfo } from "@/services/user";
 import useUserStore from "@/stores/userStore";
@@ -24,7 +23,6 @@ const perfix = "/workspace/";
 const LayoutPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { message } = useApp();
   const { setUser } = useUserStore();
   const searchParams = new URLSearchParams(location.search);
   const tenant = searchParams.get("tenant");
@@ -41,9 +39,6 @@ const LayoutPage = () => {
   const { data: userData, loading: userLoad } = useRequest(UserInfo, {
     onSuccess: (data) => {
       setUser(data);
-    },
-    onError: (error) => {
-      message.error(error.message);
     },
   });
 

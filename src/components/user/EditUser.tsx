@@ -40,9 +40,6 @@ export default function EditUserComponent(props: EditUserProps) {
         setConfirmLoading(false);
         callback();
       },
-      onError: (error) => {
-        message.error(error.message);
-      },
     }
   );
 
@@ -51,9 +48,6 @@ export default function EditUserComponent(props: EditUserProps) {
     defaultParams: [{ page: 0, pageSize: 0 }],
     onSuccess: () => {
       userQueryRun(id);
-    },
-    onError: (error) => {
-      message.error(error.message);
     },
   });
 
@@ -78,9 +72,6 @@ export default function EditUserComponent(props: EditUserProps) {
         });
       }
       setTargetKeys(data?.roles?.map((role) => role.id) || []);
-    },
-    onError: (error) => {
-      message.error(error.message);
     },
   });
 

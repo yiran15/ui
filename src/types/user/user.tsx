@@ -105,7 +105,7 @@ export function GetUserColumn(props: GetUserColumnProps) {
     {
       title: "手机号",
       dataIndex: "mobile",
-      width: "8%",
+      width: "12%",
     },
     {
       title: "状态",

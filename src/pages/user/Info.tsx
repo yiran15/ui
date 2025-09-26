@@ -32,9 +32,6 @@ const InfoPage = () => {
     onSuccess: (data) => {
       form.setFieldsValue(data);
     },
-    onError: (error) => {
-      message.error(error.message);
-    },
   });
 
   const { run: upRun, loading: upLoad } = useRequest(UserUpdateBySelf, {
@@ -44,9 +41,6 @@ const InfoPage = () => {
       message.success("修改成功");
       refresh();
       form.resetFields();
-    },
-    onError: (error) => {
-      message.error(error.message);
     },
   });
 
@@ -65,9 +59,6 @@ const InfoPage = () => {
       timerRef.current = setTimeout(() => {
         handlePwdOk();
       }, 1000);
-    },
-    onError: (error) => {
-      message.error(error.message);
     },
   });
 

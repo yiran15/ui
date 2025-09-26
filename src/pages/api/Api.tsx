@@ -31,9 +31,6 @@ const PolicyPage = () => {
     refresh: apiListRefresh,
   } = useRequest(GetApiList, {
     manual: true,
-    onError: (error) => {
-      message.error(error.message);
-    },
   });
 
   // 搜索处理（点击搜索按钮时触发）
@@ -83,9 +80,6 @@ const PolicyPage = () => {
     manual: true,
     onSuccess: () => {
       apiListRefresh();
-    },
-    onError: (error) => {
-      message.error(error.message);
     },
   });
 
