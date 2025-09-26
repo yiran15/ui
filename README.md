@@ -27,6 +27,12 @@
 ![OAuth2 登录](docs/img/oauth2-1.png)
 ![OAuth2 登录](docs/img/oauth2-feishu.png)
 
+#### 接口错误详情展示
+
+接口发送错误时通过 `requestId` 快速定位日志
+
+![错误展示](docs/img/error.png)
+
 ## 快速开始
 
 ### 配置

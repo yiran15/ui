@@ -100,10 +100,30 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ errors, onClose }) => {
               <Alert
                 className="w-full"
                 message={
-                  <Text strong>{`错误 ${index + 1}: ${item.error}`}</Text>
+                  <div className="flex text-sm">
+                    <Text className="flex-1/6" strong>
+                      错误 {index + 1}
+                    </Text>
+                    <Text type="secondary" className="flex-5/6">
+                      {item.error}
+                    </Text>
+                  </div>
                 }
                 description={
-                  item.requestId ? `RequestId: ${item.requestId}` : undefined
+                  <div className="flex text-sm">
+                    <Text strong className="flex-1/6">
+                      请求 ID
+                    </Text>
+                    <Text
+                      copyable={{
+                        tooltips: ["点击复制", "已复制"],
+                      }}
+                      type="secondary"
+                      className="flex-5/6"
+                    >
+                      {item.requestId}
+                    </Text>
+                  </div>
                 }
                 type="error"
                 showIcon

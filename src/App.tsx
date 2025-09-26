@@ -10,12 +10,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <ErrorModal
-        errors={errors}
-        onClose={() => {
-          clearError();
-        }}
-      />
+      <ErrorModal errors={errors} onClose={clearError} />
       <RouterProvider router={router} />
     </ThemeProvider>
   );
