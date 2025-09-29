@@ -15,11 +15,5 @@ export const useErrorStore = create<ErrorState>((set) => ({
         ? [...state.errors, ...error]
         : [...state.errors, error],
     })),
-  clearError: (index) =>
-    set((state) => {
-      if (index === undefined) return { errors: [] };
-      const newErrors = [...state.errors];
-      newErrors.splice(index, 1);
-      return { errors: newErrors };
-    }),
+  clearError: () => set({ errors: [] }),
 }));

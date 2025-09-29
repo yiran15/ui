@@ -30,17 +30,16 @@ apiClient.interceptors.response.use(
   (response) => {
     const res = response.data;
     if (res.code === 0) {
-      // 后端 res 中的 data
       return res.data;
-    } else {
-      useErrorStore.getState().addError({
-        error: res.message || "network error, please try again later",
-        requestId: res.requestId || "",
-      });
-      return Promise.reject(
-        new Error(res.message || "network error, please try again later")
-      );
     }
+
+    useErrorStore.getState().addError({
+      error: res.message || "network error, please try again later",
+      requestId: res.requestId || "",
+    });
+    return Promise.reject(
+      new Error(res.message || "network error, please try again later")
+    );
   },
   (error: AxiosError) => {
     const apiRes = error.response?.data as ApiResponse;
