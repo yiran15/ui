@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Modal, List, Alert, Typography, Button, Tooltip } from "antd";
+import { Modal, List, Alert, Typography, Button, Tooltip, Space } from "antd";
 
 export interface ErrorItem {
   error: string;
@@ -96,34 +96,27 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ errors, onClose }) => {
         <List
           dataSource={errors}
           renderItem={(item, index) => (
-            <List.Item>
+            <List.Item className="mb-4">
               <Alert
-                className="w-full"
+                style={{ width: "100%" }}
                 message={
-                  <div className="flex text-sm">
-                    <Text className="flex-1/6" strong>
-                      错误 {index + 1}
-                    </Text>
-                    <Text type="secondary" className="flex-5/6">
-                      {item.error}
-                    </Text>
-                  </div>
+                  <Space className="text-sm" size={6}>
+                    <Text strong>错误 {index + 1}</Text>
+                    <Text type="secondary">{item.error}</Text>
+                  </Space>
                 }
                 description={
-                  <div className="flex text-sm">
-                    <Text strong className="flex-1/6">
-                      请求 ID
-                    </Text>
+                  <Space className="text-sm" size={6}>
+                    <Text strong>请求 ID</Text>
                     <Text
                       copyable={{
                         tooltips: ["点击复制", "已复制"],
                       }}
                       type="secondary"
-                      className="flex-5/6"
                     >
                       {item.requestId}
                     </Text>
-                  </div>
+                  </Space>
                 }
                 type="error"
                 showIcon
